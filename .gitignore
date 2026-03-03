@@ -1,1 +1,7 @@
-/franka_description
+# ROS
+*/build
+*/install
+*/log
+
+# submodules
+*/franka_description
