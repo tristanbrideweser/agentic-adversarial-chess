@@ -1,0 +1,3 @@
+[console_scripts]
+board_state_node = chess_logic.board_state_node:main
+stockfish_node = chess_logic.stockfish_node:main
