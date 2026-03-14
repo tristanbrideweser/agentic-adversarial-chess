@@ -4,6 +4,7 @@ install/
 log/
 
 # submodules
-*/franka_description
+franka_description/
 
-*__pyche__/
+__pycache__/
+*.pyc

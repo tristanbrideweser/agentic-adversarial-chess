@@ -6,6 +6,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
     # Package directories
@@ -18,10 +19,7 @@ def generate_launch_description():
     xacro_file = PathJoinSubstitution([description_pkg_share, 'urdf', 'fr3_chess.urdf.xacro'])
 
     # Robot description
-    # Pass the path to the controller config to the xacro if needed, 
-    # but the xacro already has a hardcoded path we might want to override or just use.
-    # Actually, the plugin in the xacro expects a path.
-    robot_description = Command(['xacro ', xacro_file])
+    robot_description = ParameterValue(Command(['xacro ', xacro_file]), value_type=str)
 
     # Gazebo World
     world_file = PathJoinSubstitution([sim_pkg_share, 'worlds', 'chess_world.sdf'])

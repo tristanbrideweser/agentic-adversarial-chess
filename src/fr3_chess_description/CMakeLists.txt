@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 # Install directories
-install(DIRECTORY urdf meshes franka_description
+install(DIRECTORY urdf meshes
   DESTINATION share/${PROJECT_NAME}
 )
 

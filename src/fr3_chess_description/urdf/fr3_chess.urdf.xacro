@@ -3,23 +3,24 @@
   <xacro:arg name="arm_id" default="fr3" />
   <xacro:arg name="gazebo_controllers" default="$(find fr3_chess_bringup)/config/fr3_controllers.yaml" />
 
+  <!-- Import franka_robot macro -->
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+
   <!-- World link -->
   <link name="world" />
 
   <!-- Robot on the world -->
-  <xacro:include filename="$(find fr3_chess_description)/franka_description/robots/common/franka_robot.xacro"/>
-  
   <xacro:franka_robot 
       robot_type="fr3"
-      joint_limits="${xacro.load_yaml('$(find fr3_chess_description)/franka_description/robots/fr3/joint_limits.yaml')}"
-      inertials="${xacro.load_yaml('$(find fr3_chess_description)/franka_description/robots/fr3/inertials.yaml')}"
-      kinematics="${xacro.load_yaml('$(find fr3_chess_description)/franka_description/robots/fr3/kinematics.yaml')}"
-      accelerometer_config="${xacro.load_yaml('$(find fr3_chess_description)/franka_description/robots/fr3/accelerometers.yaml')}"
-      dynamics="${xacro.load_yaml('$(find fr3_chess_description)/franka_description/robots/fr3/dynamics.yaml')}"
+      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+      accelerometer_config="${xacro.load_yaml('$(find franka_description)/robots/fr3/accelerometers.yaml')}"
+      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
       gazebo="true"
       ros2_control="true"
       hand="true"
-      parent="world"
+      connected_to="world"
       xyz="0 0 0"
       rpy="0 0 0"
   />
