@@ -8,3 +8,4 @@ franka_description/
 
 __pycache__/
 *.pyc
+*egg-info
