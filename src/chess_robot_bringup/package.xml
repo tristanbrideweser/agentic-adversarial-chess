@@ -1,18 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>perception</name>
+  <name>chess_robot_bringup</name>
   <version>0.0.0</version>
-  <description>Board state and piece perception for the chess robots.</description>
+  <description>Top-level launch and config for the chess robot stack.</description>
   <maintainer email="sandov22@todo.todo">sandov22</maintainer>
   <license>TODO: License declaration</license>
 
-  <depend>rclpy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>cv_bridge</depend>
-  <depend>python3-numpy</depend>
-  <depend>python3-yaml</depend>
+  <exec_depend>chess_robot_description</exec_depend>
+  <exec_depend>perception</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
