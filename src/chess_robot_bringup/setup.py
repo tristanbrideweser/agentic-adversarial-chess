@@ -1,6 +1,8 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'perception'
+package_name = 'chess_robot_bringup'
 
 setup(
     name=package_name,
@@ -10,19 +12,17 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/config', ['config/camera_params.yaml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
-    scripts=['scripts/occupancy_view.py'],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='sandov22',
     maintainer_email='sandov22@todo.todo',
-    description='Board state and piece perception for the chess robots.',
+    description='Top-level launch and config for the chess robot stack.',
     license='TODO',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'board_verifier = perception.board_verifier:main',
         ],
     },
 )
