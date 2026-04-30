@@ -14,10 +14,22 @@ of truth.
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 import chess
 from std_msgs.msg import String
 
 from chess_engine.fen_parser import parse_fen
+
+
+# /board_state is the authoritative game-state plane. Publish with
+# TRANSIENT_LOCAL durability so late-joining subscribers (e.g. move_translator
+# coming up after the first move was applied) immediately receive the most
+# recent FEN without waiting for the next 1 Hz tick.
+_BOARD_STATE_QOS = QoSProfile(
+    reliability=ReliabilityPolicy.RELIABLE,
+    durability=DurabilityPolicy.TRANSIENT_LOCAL,
+    depth=10,
+)
 
 
 class BoardStateNode(Node):
@@ -25,7 +37,7 @@ class BoardStateNode(Node):
         super().__init__('board_state_node')
         self.board = chess.Board()
 
-        self.state_pub = self.create_publisher(String, '/board_state', 10)
+        self.state_pub = self.create_publisher(String, '/board_state', _BOARD_STATE_QOS)
         self.game_over_pub = self.create_publisher(String, '/game_over', 10)
 
         self.create_timer(1.0, self.publish_board_state)
