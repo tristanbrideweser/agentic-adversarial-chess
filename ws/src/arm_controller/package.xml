@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>arm_controller</name>
+  <version>0.1.0</version>
+  <description>
+    Pick-and-place action servers for both Franka Panda arms.
+    Orchestrates MoveIt 2, Cartesian path execution, and gripper control
+    for chess piece manipulation.
+  </description>
+  <maintainer email="tristan@example.com">Tristan</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_py</depend>
+  <depend>franka_msgs</depend>
+  <depend>franka_ros2</depend>
+  <depend>control_msgs</depend>
+
+  <!-- Custom action interface (chess_interfaces/action/PickPlace) -->
+  <depend>chess_interfaces</depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
