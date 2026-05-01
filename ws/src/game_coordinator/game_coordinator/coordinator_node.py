@@ -9,7 +9,8 @@ Root: Parallel (SuccessOnAll)
 ├── DataGathering — subscribers populate the blackboard from ROS topics
 │   ├── /board_state       → BOARD_STATE_FEN
 │   ├── /game_over         → GAME_OVER
-│   └── /pick_place_tasks  → TASK_QUEUE_MSG (raw msg; parsed by WaitForTaskQueue)
+│   ├── /pick_place_tasks  → TASK_QUEUE_MSG (raw msg; parsed by WaitForTaskQueue)
+│   └── /chess/occupancy   → OCCUPANCY_MSG (raw msg; consumed by VerifyBoard)
 └── GameLoop — Repeat(forever) wrapping the per-turn sequence
     └── PlayOneTurn: Sequence
         ├── CheckGameOver         (FAILURE → exits the Repeat)
@@ -19,18 +20,18 @@ Root: Parallel (SuccessOnAll)
         ├── PublishApplyMove
         ├── WaitForBoardUpdate
         ├── WaitForTaskQueue      [stub-dep: move_translator]
-        └── IterateTaskQueue
-            └── ExecuteOneTask: Sequence
-                ├── PopNextTask
-                ├── Retry(3) → PlanGrasp         [stub: grasp_planner]
-                ├── Retry(3) → ExecutePickPlace  [stub: arm_controller]
-                └── VerifyBoard                  [stub: perception]
+        ├── IterateTaskQueue
+        │   └── ExecuteOneTask: Sequence
+        │       ├── PopNextTask
+        │       ├── Retry(3) → PlanGrasp         [pre-written: needs chess_interfaces]
+        │       └── Retry(3) → ExecutePickPlace  [pre-written: needs chess_interfaces]
+        └── VerifyBoard                          [runs once per turn, reads /chess/occupancy]
 """
 
 import rclpy
 import py_trees
 import py_trees_ros
-from std_msgs.msg import String
+from std_msgs.msg import String, UInt8MultiArray
 
 from . import behaviors as B
 from .behaviors import init_blackboard
@@ -61,10 +62,18 @@ def _data_gathering() -> py_trees.behaviour.Behaviour:
         blackboard_variables={B.TASK_QUEUE_MSG: None},  # whole msg
         clearing_policy=py_trees.common.ClearingPolicy.NEVER,
     )
+    occupancy_to_bb = py_trees_ros.subscribers.ToBlackboard(
+        name="OccupancyToBlackboard",
+        topic_name="/chess/occupancy",
+        topic_type=UInt8MultiArray,
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
+        blackboard_variables={B.OCCUPANCY_MSG: None},  # whole msg, used by VerifyBoard
+        clearing_policy=py_trees.common.ClearingPolicy.NEVER,
+    )
     return py_trees.composites.Parallel(
         name="DataGathering",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(synchronise=False),
-        children=[fen_to_bb, game_over_to_bb, tasks_to_bb],
+        children=[fen_to_bb, game_over_to_bb, tasks_to_bb, occupancy_to_bb],
     )
 
 
@@ -86,7 +95,6 @@ def _execute_one_task(node) -> py_trees.behaviour.Behaviour:
             B.PopNextTask(),
             plan_grasp,
             pick_place,
-            B.VerifyBoard(node),
         ],
     )
 
@@ -104,6 +112,7 @@ def _play_one_turn(node) -> py_trees.behaviour.Behaviour:
             B.WaitForBoardUpdate(node),
             B.WaitForTaskQueue(node),
             B.IterateTaskQueue(_execute_one_task(node)),
+            B.VerifyBoard(node),
         ],
     )
 

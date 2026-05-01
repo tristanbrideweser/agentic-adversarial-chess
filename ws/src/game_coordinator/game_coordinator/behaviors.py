@@ -2,8 +2,10 @@
 """
 
 import json
+import math
 
 import py_trees
+from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from std_msgs.msg import String
@@ -15,6 +17,7 @@ from chess_engine_interfaces.srv import GetMove
 BOARD_STATE_FEN = "/board_state_fen"   # str  — live FEN from /board_state
 GAME_OVER       = "/game_over"          # str  — termination reason; "" while game continues
 TASK_QUEUE_MSG  = "/task_queue_msg"     # std_msgs/String — last raw msg from /pick_place_tasks
+OCCUPANCY_MSG   = "/occupancy_msg"      # std_msgs/UInt8MultiArray — last raw msg from /chess/occupancy
 
 # Written/consumed by the per-turn sequence.
 PRE_MOVE_FEN    = "/pre_move_fen"       # str  — FEN snapshotted before publishing /apply_move
@@ -28,6 +31,7 @@ _DEFAULTS = {
     BOARD_STATE_FEN: "",
     GAME_OVER:       "",
     TASK_QUEUE_MSG:  None,
+    OCCUPANCY_MSG:   None,
     PRE_MOVE_FEN:    "",
     ACTIVE_PLAYER:   "",
     CURRENT_MOVE:    "",
@@ -46,6 +50,12 @@ def init_blackboard() -> py_trees.blackboard.Client:
     for key, value in _DEFAULTS.items():
         bb.set(key, value)
     return bb
+
+
+def _yaw_to_quat(yaw: float) -> list:
+    """Convert a yaw rotation around world Z to an xyzw quaternion."""
+    half = float(yaw) / 2.0
+    return [0.0, 0.0, math.sin(half), math.cos(half)]
 
 
 # --- pure-logic leaves ----------------------
@@ -344,12 +354,14 @@ class RequestMove(py_trees.behaviour.Behaviour):
 
 
 class PlanGrasp(py_trees.behaviour.Behaviour):
-    """Call /grasp_planner/plan with CURRENT_TASK → CURRENT_GRASP.
+    """Call /grasp_planner/plan (chess_interfaces/action/GraspPlanning) → CURRENT_GRASP.
 
-    Depends on: grasp_planner (action server, goal/result types TBD)
+    Depends on:
+      - grasp_planner (action server on /grasp_planner/plan)
+      - chess_interfaces (action type — package not built yet, see lazy import in setup)
 
-    Reads:  CURRENT_TASK
-    Writes: CURRENT_GRASP
+    Reads:  CURRENT_TASK  (dict from move_translator: pick_square, piece_char, pick_pose, ...)
+    Writes: CURRENT_GRASP (dict: position, orientation, finger_separation, source)
     """
 
     def __init__(self, node: Node, name: str = "PlanGrasp"):
@@ -358,22 +370,97 @@ class PlanGrasp(py_trees.behaviour.Behaviour):
         self.bb = py_trees.blackboard.Client(name=name)
         self.bb.register_key(CURRENT_TASK, access=py_trees.common.Access.READ)
         self.bb.register_key(CURRENT_GRASP, access=py_trees.common.Access.WRITE)
+        self._client = None
+        self._GraspPlanning = None
+        self._goal_future = None
+        self._goal_handle = None
+        self._result_future = None
 
     def setup(self, **kwargs):
-        # TODO(grasp_planner branch): create ActionClient for /grasp_planner/plan.
-        pass
+        # Lazy import: chess_interfaces hasn't been built yet on this branch.
+        # Once the interfaces package is done, this resolves and the
+        # action client wires up. Until then the leaf returns FAILURE quickly
+        # with a clear feedback_message.
+        try:
+            from chess_interfaces.action import GraspPlanning
+        except ImportError:
+            self.node.get_logger().warn(
+                "chess_interfaces not built — PlanGrasp disabled until package lands"
+            )
+            return
+        self._GraspPlanning = GraspPlanning
+        self._client = ActionClient(self.node, GraspPlanning, "/grasp_planner/plan")
+
+    def initialise(self):
+        self._goal_future = None
+        self._goal_handle = None
+        self._result_future = None
 
     def update(self):
-        raise NotImplementedError(
-            "PlanGrasp: implement once grasp_planner branch defines the action type"
-        )
+        if self._client is None:
+            self.feedback_message = "chess_interfaces not available"
+            return py_trees.common.Status.FAILURE
+
+        # send the goal on the first tick
+        if self._goal_future is None:
+            task = self.bb.get(CURRENT_TASK) or {}
+            pick_square = task.get("pick_square")
+            if not pick_square:
+                # place_reserve tasks have pick_square=null. The grasp planner
+                # operates on board squares only — reserve pickups need a
+                # different code path (TODO: handle separately).
+                self.feedback_message = "no pick_square in task (likely place_reserve)"
+                return py_trees.common.Status.FAILURE
+            if not self._client.server_is_ready():
+                self.feedback_message = "/grasp_planner/plan not available"
+                return py_trees.common.Status.FAILURE
+            goal = self._GraspPlanning.Goal()
+            goal.square = pick_square
+            goal.fen_char = task.get("piece_char", "")
+            goal.use_gpd = False  # lookup mode by default — faster, more reliable per arch §2.5
+            goal.yaw_hint = float(task.get("pick_pose", {}).get("yaw", 0.0))
+            self._goal_future = self._client.send_goal_async(goal)
+            return py_trees.common.Status.RUNNING
+
+        # wait for the server to accept (or reject) the goal
+        if self._goal_handle is None:
+            if not self._goal_future.done():
+                return py_trees.common.Status.RUNNING
+            self._goal_handle = self._goal_future.result()
+            if self._goal_handle is None or not self._goal_handle.accepted:
+                self.feedback_message = "grasp planning goal rejected"
+                return py_trees.common.Status.FAILURE
+            self._result_future = self._goal_handle.get_result_async()
+            return py_trees.common.Status.RUNNING
+
+        # Wait for the action result
+        if not self._result_future.done():
+            return py_trees.common.Status.RUNNING
+
+        wrapped = self._result_future.result()
+        if wrapped is None:
+            self.feedback_message = "grasp planning result future returned None"
+            return py_trees.common.Status.FAILURE
+        result = wrapped.result
+        if not result.success:
+            self.feedback_message = f"grasp planning failed: {result.failure_reason}"
+            return py_trees.common.Status.FAILURE
+        self.bb.set(CURRENT_GRASP, {
+            "position": list(result.position),
+            "orientation": list(result.orientation),
+            "finger_separation": float(result.finger_separation),
+            "source": result.source,
+        })
+        return py_trees.common.Status.SUCCESS
 
 
 class ExecutePickPlace(py_trees.behaviour.Behaviour):
-    """Send the pick/place goal to the active arm's controller and wait for result.
+    """Send pick/place goal to the active arm's controller and wait for result.
 
-    Depends on: arm_controller (one action server per arm:
-                /white_panda/pick_place, /black_panda/pick_place)
+    Depends on:
+      - arm_controller (one action server per arm:
+        /white_panda/pick_place, /black_panda/pick_place)
+      - chess_interfaces (action type — package not built yet, lazy import in setup)
 
     Reads: ACTIVE_PLAYER, CURRENT_TASK, CURRENT_GRASP
     """
@@ -385,37 +472,187 @@ class ExecutePickPlace(py_trees.behaviour.Behaviour):
         self.bb.register_key(ACTIVE_PLAYER, access=py_trees.common.Access.READ)
         self.bb.register_key(CURRENT_TASK, access=py_trees.common.Access.READ)
         self.bb.register_key(CURRENT_GRASP, access=py_trees.common.Access.READ)
+        self._clients = {}
+        self._PickPlace = None
+        self._goal_future = None
+        self._goal_handle = None
+        self._result_future = None
 
     def setup(self, **kwargs):
-        # TODO(arm_controller branch): create two ActionClients keyed by color
-        #   so update() can dispatch based on ACTIVE_PLAYER.
-        pass
+        # Lazy import: chess_interfaces hasn't been built yet on this branch.
+        # Once the teammate's interfaces package lands, this resolves and the
+        # action clients wire up. Until then the leaf returns FAILURE quickly.
+        try:
+            from chess_interfaces.action import PickPlace
+        except ImportError:
+            self.node.get_logger().warn(
+                "chess_interfaces not built — ExecutePickPlace disabled until package lands"
+            )
+            return
+        self._PickPlace = PickPlace
+        self._clients = {
+            "white": ActionClient(self.node, PickPlace, "/white_panda/pick_place"),
+            "black": ActionClient(self.node, PickPlace, "/black_panda/pick_place"),
+        }
+
+    def initialise(self):
+        self._goal_future = None
+        self._goal_handle = None
+        self._result_future = None
 
     def update(self):
-        raise NotImplementedError(
-            "ExecutePickPlace: implement once arm_controller branch defines the action type"
-        )
+        if not self._clients:
+            self.feedback_message = "chess_interfaces not available"
+            return py_trees.common.Status.FAILURE
+
+        # send the goal to the active arm
+        if self._goal_future is None:
+            color = self.bb.get(ACTIVE_PLAYER)
+            client = self._clients.get(color)
+            if client is None:
+                self.feedback_message = f"unknown active player: {color!r}"
+                return py_trees.common.Status.FAILURE
+            if not client.server_is_ready():
+                self.feedback_message = f"/{color}_panda/pick_place not available"
+                return py_trees.common.Status.FAILURE
+
+            task = self.bb.get(CURRENT_TASK) or {}
+            grasp = self.bb.get(CURRENT_GRASP) or {}
+
+            goal = self._PickPlace.Goal()
+            goal.task_type = task.get("task_type", "")
+            goal.piece_char = task.get("piece_char", "")
+            # Pick pose comes from the grasp planner's computed gripper pose.
+            goal.pick_position = list(grasp.get("position", [0.0, 0.0, 0.0]))
+            goal.pick_orientation = list(grasp.get("orientation", [0.0, 0.0, 0.0, 1.0]))
+            # Place pose comes from the task dict (yaw → xyzw quaternion).
+            place_pose = task.get("place_pose", {}) or {}
+            goal.place_position = [
+                float(place_pose.get("x", 0.0)),
+                float(place_pose.get("y", 0.0)),
+                float(place_pose.get("z", 0.0)),
+            ]
+            goal.place_orientation = _yaw_to_quat(place_pose.get("yaw", 0.0))
+            goal.finger_separation = float(grasp.get("finger_separation", 0.0))
+            goal.grasp_height = float(task.get("grasp_height", 0.0))
+            goal.use_cartesian = True  # arch §2.6 default
+
+            self._goal_future = client.send_goal_async(goal)
+            return py_trees.common.Status.RUNNING
+
+        # wait for the server to accept the goal
+        if self._goal_handle is None:
+            if not self._goal_future.done():
+                return py_trees.common.Status.RUNNING
+            self._goal_handle = self._goal_future.result()
+            if self._goal_handle is None or not self._goal_handle.accepted:
+                self.feedback_message = "pick/place goal rejected"
+                return py_trees.common.Status.FAILURE
+            self._result_future = self._goal_handle.get_result_async()
+            return py_trees.common.Status.RUNNING
+
+        # wait for the action result
+        if not self._result_future.done():
+            return py_trees.common.Status.RUNNING
+
+        wrapped = self._result_future.result()
+        if wrapped is None:
+            self.feedback_message = "pick/place result future returned None"
+            return py_trees.common.Status.FAILURE
+        result = wrapped.result
+        if not result.success:
+            self.feedback_message = f"pick/place failed: {result.failure_reason}"
+            return py_trees.common.Status.FAILURE
+        return py_trees.common.Status.SUCCESS
 
 
 class VerifyBoard(py_trees.behaviour.Behaviour):
-    """Call /perception/verify_board with the post-move FEN. SUCCESS iff vision agrees.
+    """Compare /chess/occupancy against the expected occupancy from BOARD_STATE_FEN.
 
-    Depends on: perception (verify_board service)
+    The perception module publishes an 8x8 UInt8MultiArray at 5 Hz where
+    data[rank*8 + file] = 1 if the square is occupied. We derive the expected
+    occupancy from the post-move FEN and check for matches.
 
-    Reads: BOARD_STATE_FEN
+    Depends on: perception (publishes /chess/occupancy)
+
+    Reads:        BOARD_STATE_FEN, OCCUPANCY_MSG
+    Writes (on init): OCCUPANCY_MSG (cleared so we wait for a fresh post-move reading)
     """
+
+    _SETTLE_SEC = 1.0   # let perception's 5 Hz publisher catch up after the arm moves
+    _TIMEOUT_SEC = 5.0
+    _MAX_MISMATCHES = 0  # tighten/loosen as we learn perception's false-positive rate
 
     def __init__(self, node: Node, name: str = "VerifyBoard"):
         super().__init__(name)
         self.node = node
         self.bb = py_trees.blackboard.Client(name=name)
         self.bb.register_key(BOARD_STATE_FEN, access=py_trees.common.Access.READ)
+        self.bb.register_key(OCCUPANCY_MSG, access=py_trees.common.Access.WRITE)
+        self._earliest_check_at = 0
+        self._deadline = 0
 
-    def setup(self, **kwargs):
-        # TODO(perception branch): create service client for /perception/verify_board.
-        pass
+    def initialise(self):
+        # Discard any stale reading so we definitely compare against a sample
+        # taken AFTER the arm finished moving.
+        self.bb.set(OCCUPANCY_MSG, None)
+        now = self.node.get_clock().now().nanoseconds
+        self._earliest_check_at = now + int(self._SETTLE_SEC * 1e9)
+        self._deadline = now + int(self._TIMEOUT_SEC * 1e9)
 
     def update(self):
-        raise NotImplementedError(
-            "VerifyBoard: implement once perception branch defines the service type"
-        )
+        now = self.node.get_clock().now().nanoseconds
+        msg = self.bb.get(OCCUPANCY_MSG)
+
+        # Settle window: even if a fresh msg arrived, give perception a beat
+        # to publish a post-arm-motion reading rather than a mid-motion one.
+        if now < self._earliest_check_at or msg is None:
+            if now > self._deadline:
+                self.feedback_message = "timeout waiting for /chess/occupancy"
+                return py_trees.common.Status.FAILURE
+            return py_trees.common.Status.RUNNING
+
+        fen = self.bb.get(BOARD_STATE_FEN)
+        if not fen:
+            self.feedback_message = "no FEN on /board_state yet"
+            return py_trees.common.Status.FAILURE
+
+        try:
+            expected = self._fen_to_occupancy(fen)
+        except (IndexError, ValueError) as e:
+            self.feedback_message = f"bad FEN: {e}"
+            return py_trees.common.Status.FAILURE
+
+        actual = list(msg.data)
+        if len(actual) != 64:
+            self.feedback_message = f"unexpected occupancy length: {len(actual)}"
+            return py_trees.common.Status.FAILURE
+
+        mismatches = sum(1 for e, a in zip(expected, actual) if (e != 0) != (a != 0))
+        if mismatches <= self._MAX_MISMATCHES:
+            return py_trees.common.Status.SUCCESS
+        self.feedback_message = f"board mismatch: {mismatches} square(s) disagree with FEN"
+        return py_trees.common.Status.FAILURE
+
+    @staticmethod
+    def _fen_to_occupancy(fen: str) -> list:
+        """FEN board portion → 64-element occupancy list (a1=0, h1=7, a8=56, h8=63).
+
+        Indexing matches perception's: data[rank_idx * 8 + file_idx], rank_idx=0
+        is rank 1, file_idx=0 is file a.
+        """
+        board_part = fen.split()[0]
+        ranks = board_part.split("/")
+        if len(ranks) != 8:
+            raise ValueError(f"FEN board section has {len(ranks)} ranks, expected 8")
+        occupancy = [0] * 64
+        for rank_str_idx, rank_str in enumerate(ranks):
+            rank_idx = 7 - rank_str_idx  # FEN lists rank 8 first
+            file_idx = 0
+            for ch in rank_str:
+                if ch.isdigit():
+                    file_idx += int(ch)
+                else:
+                    occupancy[rank_idx * 8 + file_idx] = 1
+                    file_idx += 1
+        return occupancy
