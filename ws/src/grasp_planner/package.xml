@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>grasp_planner</name>
+  <version>0.1.0</version>
+  <description>
+    Piece-type-aware grasp planner for chess robot arms.
+    Supports GPD (live point cloud) and precomputed lookup-table modes.
+  </description>
+  <maintainer email="tristan@example.com">Tristan</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>pcl_ros</depend>
+
+  <!-- GPD ROS wrapper (optional — node degrades gracefully without it) -->
+  <exec_depend condition="$gpd_ros_available">gpd_ros</exec_depend>
+
+  <!-- Custom action interface (chess_interfaces/action/GraspPlanning) -->
+  <depend>chess_interfaces</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,78 @@
+/**:
+  ros__parameters:
+
+    # -----------------------------------------------------------------------
+    # Board surface and geometry
+    # -----------------------------------------------------------------------
+    board_surface_z: 0.762          # world Z of the board surface (m)
+    square_size: 0.05               # edge length of one square (m)
+    a1_x: -0.175                    # world X of the a1 square centre (m)
+    a1_y: -0.175                    # world Y of the a1 square centre (m)
+
+    # -----------------------------------------------------------------------
+    # Arm base positions (world frame)
+    # -----------------------------------------------------------------------
+    white_panda_base: [0.0, -0.45, 0.75]   # [x, y, z]
+    black_panda_base: [0.0,  0.45, 0.75]
+
+    # -----------------------------------------------------------------------
+    # Overhead camera
+    # -----------------------------------------------------------------------
+    camera_position: [0.0, 0.0, 1.80]
+
+    # -----------------------------------------------------------------------
+    # Graveyard positions
+    # -----------------------------------------------------------------------
+    graveyard_white_x: -0.275       # left side (negative X) for captured white pieces
+    graveyard_black_x:  0.275       # right side (positive X) for captured black pieces
+    graveyard_start_y: -0.175       # aligned with rank 1
+    graveyard_spacing:  0.050       # inter-slot spacing (m)
+
+    # -----------------------------------------------------------------------
+    # Reserve piece positions (for pawn promotion)
+    # -----------------------------------------------------------------------
+    reserve_white_x:  0.275
+    reserve_white_y_start:  0.175   # behind rank 8 from white's perspective
+    reserve_black_x: -0.275
+    reserve_black_y_start: -0.175   # behind rank 1 from black's perspective
+
+    # -----------------------------------------------------------------------
+    # Piece heights (m) and grasp Z (absolute world frame, m)
+    # Grasp Z = board_surface_z + height * 0.6
+    # -----------------------------------------------------------------------
+    piece_heights:
+      pawn:   0.045
+      rook:   0.055
+      knight: 0.060
+      bishop: 0.065
+      queen:  0.080
+      king:   0.095
+
+    piece_grasp_z:
+      pawn:   0.789
+      rook:   0.795
+      knight: 0.798
+      bishop: 0.801
+      queen:  0.810
+      king:   0.819
+
+    piece_collision_radius:
+      pawn:   0.012
+      rook:   0.014
+      knight: 0.015
+      bishop: 0.013
+      queen:  0.015
+      king:   0.015
+
+    # -----------------------------------------------------------------------
+    # Pick-and-place waypoint offsets (m)
+    # -----------------------------------------------------------------------
+    approach_z_offset:  0.10        # height above pick/place pose before descending
+    lift_z_offset:      0.10        # height above pick pose after grasping
+
+    # -----------------------------------------------------------------------
+    # Move translator node settings
+    # -----------------------------------------------------------------------
+    move_translator:
+      publish_rate_hz: 0.0          # 0 = publish on change only
+      use_tf_poses: false            # false = analytic geometry; true = TF lookup
