@@ -5,6 +5,7 @@ import json
 
 import py_trees
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from std_msgs.msg import String
 
 from chess_engine_interfaces.srv import GetMove
@@ -182,15 +183,20 @@ class WaitForTaskQueue(py_trees.behaviour.Behaviour):
                 return py_trees.common.Status.FAILURE
             return py_trees.common.Status.RUNNING
         try:
-            queue = json.loads(msg.data)
+            payload = json.loads(msg.data)
         except (AttributeError, ValueError) as e:
             self.feedback_message = f"bad task queue payload: {e}"
             return py_trees.common.Status.FAILURE
+        if not isinstance(payload, dict):
+            self.feedback_message = "task queue payload is not a dict"
+            return py_trees.common.Status.FAILURE
+        queue = payload.get("tasks", [])
         if not isinstance(queue, list) or not queue:
-            self.feedback_message = "task queue empty or not a list"
+            self.feedback_message = "task queue empty or missing 'tasks' field"
             return py_trees.common.Status.FAILURE
         self.bb.set(TASK_QUEUE, queue)
         return py_trees.common.Status.SUCCESS
+
 
 
 class PopNextTask(py_trees.behaviour.Behaviour):
@@ -259,7 +265,14 @@ class PublishApplyMove(py_trees.behaviour.Behaviour):
         self._pub = None
 
     def setup(self, **kwargs):
-        self._pub = self.node.create_publisher(String, "/apply_move", 10)
+        self._pub = self.node.create_publisher(
+            String, "/apply_move",
+            QoSProfile(
+                reliability=ReliabilityPolicy.RELIABLE,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                depth=10,
+            ),
+        )
 
     def update(self):
         move = self.bb.get(CURRENT_MOVE)
@@ -273,7 +286,7 @@ class PublishApplyMove(py_trees.behaviour.Behaviour):
 class RequestMove(py_trees.behaviour.Behaviour):
     """Call /stockfish/{active_player}/get_move and write UCI to CURRENT_MOVE.
 
-    Depends on: chess_engine (stockfish_node service, type TBD)
+    chess_engine (stockfish_node service via chess_engine_interfaces/srv/GetMove)
 
     Reads:  ACTIVE_PLAYER, PRE_MOVE_FEN
     Writes: CURRENT_MOVE
@@ -288,15 +301,46 @@ class RequestMove(py_trees.behaviour.Behaviour):
         self.bb.register_key(CURRENT_MOVE, access=py_trees.common.Access.WRITE)
 
     def setup(self, **kwargs):
-        # TODO(chess_engine branch): create one service client per color:
-        #   /stockfish/white/get_move, /stockfish/black/get_move
-        # using the request/response type defined by the chess_engine package.
-        pass
+        self._clients = {
+            "white": self.node.create_client(GetMove, "/stockfish/white/get_move"),
+            "black": self.node.create_client(GetMove, "/stockfish/black/get_move"),
+        }
+        self._future = None
+    
+    def initialise(self):
+        self._future = None
 
     def update(self):
-        raise NotImplementedError(
-            "RequestMove: implement once chess_engine branch defines the service type"
-        )
+        # Send the request on the first tick
+        if self._future is None:
+            color = self.bb.get(ACTIVE_PLAYER)
+            client = self._clients.get(color)
+            if client is None:
+                self.feedback_message = f"unknown active player: {color!r}"
+                return py_trees.common.Status.FAILURE
+            if not client.service_is_ready():
+                self.feedback_message = f"/stockfish/{color}/get_move not available"
+                return py_trees.common.Status.FAILURE
+            request = GetMove.Request()
+            request.fen = self.bb.get(PRE_MOVE_FEN)
+            self._future = client.call_async(request)
+            return py_trees.common.Status.RUNNING
+        
+        # If we don't recieve the move keep ticking
+        if not self._future.done():
+            return py_trees.common.Status.RUNNING
+        
+        # Have recieved a response
+        response = self._future.result()
+        if response is None:
+            self.feedback_message = "service call returned no response"
+            return py_trees.common.Status.FAILURE
+        if not response.success or not response.uci:
+            self.feedback_message = f"stockfish failed: {response.reason}"
+            return py_trees.common.Status.FAILURE
+        self.bb.set(CURRENT_MOVE, response.uci)
+        return py_trees.common.Status.SUCCESS
+
 
 
 class PlanGrasp(py_trees.behaviour.Behaviour):
