@@ -1,0 +1,97 @@
+/**:
+  ros__parameters:
+
+    # -----------------------------------------------------------------------
+    # Grasp planner mode
+    #   "auto"   : GPD if available + point cloud present, else lookup table
+    #   "gpd"    : always use GPD (fails if no cloud or action server)
+    #   "lookup" : always use precomputed top-down table (fastest, default)
+    # -----------------------------------------------------------------------
+    mode: "auto"
+
+    # -----------------------------------------------------------------------
+    # Top-down approach angle tolerance (degrees)
+    # Grasps whose approach vector deviates more than this from vertical
+    # are rejected.  Per-piece overrides are applied in grasp_filter.py.
+    # -----------------------------------------------------------------------
+    top_down_tolerance_deg: 15.0
+
+    # -----------------------------------------------------------------------
+    # GPD quality score threshold
+    # GPD candidates below this score are discarded before ranking.
+    # -----------------------------------------------------------------------
+    min_gpd_score: 0.0
+
+    # -----------------------------------------------------------------------
+    # Maximum number of grasp candidates to request from GPD per call.
+    # Higher values give better coverage but slower planning.
+    # -----------------------------------------------------------------------
+    max_gpd_candidates: 20
+
+    # -----------------------------------------------------------------------
+    # If true, automatically fall back to the lookup table when GPD
+    # returns zero valid candidates.
+    # -----------------------------------------------------------------------
+    fallback_to_lookup: true
+
+    # -----------------------------------------------------------------------
+    # Point cloud age limit.  If the most recent /overhead_camera/points
+    # message is older than this, it is treated as stale and GPD will not
+    # be called (falls back to lookup if fallback_to_lookup=true).
+    # -----------------------------------------------------------------------
+    pointcloud_timeout_sec: 2.0
+
+    # -----------------------------------------------------------------------
+    # Crop box half-width around the target square (metres).
+    # The point cloud is cropped to a box of ±crop_box_half around the
+    # square centre before being sent to GPD.
+    # -----------------------------------------------------------------------
+    crop_box_half_m: 0.03
+
+    # -----------------------------------------------------------------------
+    # Per-piece-type height tolerance overrides (metres).
+    # These override the default height_tolerance_m in FilterConfig.
+    # Taller pieces with more graspable band can tolerate more Z error.
+    # -----------------------------------------------------------------------
+    height_tolerance:
+      pawn:   0.006
+      rook:   0.008
+      knight: 0.008
+      bishop: 0.008
+      queen:  0.012
+      king:   0.015
+
+    # -----------------------------------------------------------------------
+    # Per-piece-type angle tolerance overrides (degrees).
+    # Knights and kings/queens have irregular shapes that sometimes force
+    # slightly off-vertical approach angles.
+    # -----------------------------------------------------------------------
+    angle_tolerance_override:
+      knight: 20.0
+      queen:  20.0
+      king:   20.0
+
+    # -----------------------------------------------------------------------
+    # Composite ranking weights
+    # composite_score = (1 - angle_weight) * quality_score
+    #                 + angle_weight * angle_score
+    # -----------------------------------------------------------------------
+    angle_weight: 0.4
+
+    # -----------------------------------------------------------------------
+    # Gripper finger separation bounds (metres)
+    # min is computed per piece type from collision radius; this sets the max.
+    # -----------------------------------------------------------------------
+    max_finger_separation_m: 0.080
+
+    # -----------------------------------------------------------------------
+    # Approach and lift Z offset (metres above grasp Z)
+    # Used by plan_approach_waypoints() in the lookup planner.
+    # -----------------------------------------------------------------------
+    approach_z_offset: 0.10
+
+    # -----------------------------------------------------------------------
+    # GPD action server and point cloud topic names
+    # -----------------------------------------------------------------------
+    gpd_action_name: "/grasp_planner/gpd_action"
+    pointcloud_topic: "/overhead_camera/points"

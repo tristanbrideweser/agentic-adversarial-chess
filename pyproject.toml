@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chess-robots"
+version = "0.1.0"
+description = "Chess move translation and robot control"
+dependencies = [
+    "numpy",
+    "pyyaml",
+]
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/move_translator/test"]
+pythonpath = ["src"]
+addopts = "-p no:launch_testing -p no:launch_testing_ros -p no:ament_lint"

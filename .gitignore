@@ -1,7 +1,11 @@
 # ROS
-*/build
-*/install
-*/log
+build/
+install/
+log/
 
 # submodules
-*/franka_description
+franka_description/
+
+__pycache__/
+*.pyc
+*egg-info

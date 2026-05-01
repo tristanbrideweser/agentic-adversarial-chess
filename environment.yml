@@ -1,0 +1,12 @@
+name: chess-robots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - pyyaml
+  - lark-parser
+  - pip
+  - pip:
+    - pytest
