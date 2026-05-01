@@ -16,6 +16,9 @@ from grasp_planner.grasp_candidates import (
     PieceType,
     Quaternion,
     get_profile,
+    BLOCK_GRASP_Z,
+    BLOCK_FINGER_SEP,
+    UNIFORM_BLOCK_PIECES,
 )
 from grasp_planner.grasp_filter import (
     FilterConfig,
@@ -32,30 +35,36 @@ from grasp_planner.grasp_filter import (
 
 BOARD_Z = 0.762
 
+def _uniform_z() -> float:
+    """The single grasp Z used for all block pieces."""
+    return BLOCK_GRASP_Z
+
+# Keep _pawn_z / _queen_z as aliases so test names stay readable,
+# but both return the same uniform value in block mode
+def _pawn_z() -> float:
+    return BLOCK_GRASP_Z
+
+def _queen_z() -> float:
+    return BLOCK_GRASP_Z
+
+
 def _make(
     angle_deg=0.0,
     score=0.8,
-    finger_sep=0.030,
+    finger_sep=None,
     z_offset=0.0,
     source="gpd",
 ) -> GraspCandidate:
-    profile_z = 0.789 + z_offset  # pawn grasp Z + offset
+    # Use the uniform block Z + optional offset; default sep = block sep
+    sep = finger_sep if finger_sep is not None else BLOCK_FINGER_SEP
     return GraspCandidate(
-        position=(0.025, -0.025, profile_z),
+        position=(0.025, -0.025, BLOCK_GRASP_Z + z_offset),
         orientation=Quaternion.top_down(0.0),
         score=score,
         approach_angle_deg=angle_deg,
-        finger_separation=finger_sep,
+        finger_separation=sep,
         source=source,
     )
-
-
-def _pawn_z() -> float:
-    return get_profile(PieceType.PAWN).grasp_z   # 0.789
-
-
-def _queen_z() -> float:
-    return get_profile(PieceType.QUEEN).grasp_z  # 0.810
 
 
 # ---------------------------------------------------------------------------
@@ -69,14 +78,17 @@ class TestFilterConfig:
         assert cfg.min_score == 0.0
         assert cfg.max_finger_separation_m == 0.080
 
-    def test_make_config_pawn_tighter_z(self):
+    def test_make_config_returns_config(self):
+        """make_config always returns a valid FilterConfig."""
         cfg = make_config(PieceType.PAWN)
-        assert cfg.height_tolerance_m <= 0.008
+        assert isinstance(cfg, FilterConfig)
+        assert cfg.height_tolerance_m > 0
 
-    def test_make_config_king_larger_z(self):
-        cfg_king = make_config(PieceType.KING)
-        cfg_pawn = make_config(PieceType.PAWN)
-        assert cfg_king.height_tolerance_m > cfg_pawn.height_tolerance_m
+    def test_make_config_uniform_pieces_same_tolerance(self):
+        """In uniform block mode all pieces get identical filter params."""
+        cfgs = [make_config(pt) for pt in PieceType]
+        tols = [c.height_tolerance_m for c in cfgs]
+        assert len(set(tols)) == 1, "Expected identical height tolerance for all block pieces"
 
     def test_make_config_override_propagates(self):
         cfg = make_config(PieceType.PAWN, min_score=0.5)
@@ -110,11 +122,11 @@ class TestAngleFilter:
         assert c.rejection_reason is not None
         assert "approach_angle" in c.rejection_reason
 
-    def test_knight_has_more_relaxed_angle_tolerance(self):
-        """Knight's irregular shape warrants looser angle tolerance."""
-        cfg_knight = make_config(PieceType.KNIGHT)
-        cfg_pawn = make_config(PieceType.PAWN)
-        assert cfg_knight.top_down_tolerance_deg >= cfg_pawn.top_down_tolerance_deg
+    def test_uniform_pieces_same_angle_tolerance(self):
+        """In uniform block mode all pieces use the same angle tolerance."""
+        cfgs = [make_config(pt) for pt in PieceType]
+        tols = [c.top_down_tolerance_deg for c in cfgs]
+        assert len(set(tols)) == 1, "Expected identical angle tolerance for all block pieces"
 
 
 # ---------------------------------------------------------------------------
@@ -180,13 +192,13 @@ class TestScoreFilter:
 class TestFingerSeparationFilter:
     def test_accepts_valid_separation(self):
         f = GraspFilter()
-        # Pawn: collision_radius=0.012, min_sep = 2*0.012+0.002 = 0.026
-        result = f.filter_and_rank([_make(finger_sep=0.028)], PieceType.PAWN, _pawn_z())
+        # Block: collision_radius=0.018, min_sep = 2*0.018+0.002 = 0.038
+        result = f.filter_and_rank([_make(finger_sep=BLOCK_FINGER_SEP)], PieceType.PAWN, _pawn_z())
         assert len(result) == 1
 
     def test_rejects_too_narrow(self):
         f = GraspFilter()
-        # min sep for pawn = 0.026 — use 0.010 which is too narrow
+        # Well below block min sep
         result = f.filter_and_rank([_make(finger_sep=0.010)], PieceType.PAWN, _pawn_z())
         assert len(result) == 0
 
@@ -211,6 +223,7 @@ class TestRanking:
         f = GraspFilter()
         cs = [_make(score=0.8)]
         ranked = f.filter_and_rank(cs, PieceType.PAWN, _pawn_z())
+        assert len(ranked) == 1
         assert ranked[0].rank == 0
 
     def test_higher_score_ranked_better(self):
@@ -218,13 +231,15 @@ class TestRanking:
         low = _make(score=0.3)
         high = _make(score=0.9)
         ranked = f.filter_and_rank([low, high], PieceType.PAWN, _pawn_z())
+        assert len(ranked) == 2
         assert ranked[0].score > ranked[1].score
 
     def test_better_angle_ranked_higher_when_scores_equal(self):
         f = GraspFilter(top_down_tolerance_deg=15.0)
         good_angle = _make(score=0.8, angle_deg=2.0)
-        bad_angle = _make(score=0.8, angle_deg=13.0)
+        bad_angle  = _make(score=0.8, angle_deg=13.0)
         ranked = f.filter_and_rank([bad_angle, good_angle], PieceType.PAWN, _pawn_z())
+        assert len(ranked) == 2
         assert ranked[0].approach_angle_deg < ranked[1].approach_angle_deg
 
     def test_ranks_are_sequential(self):
@@ -268,19 +283,21 @@ class TestPerPieceFilters:
                 f"Piece type {pt} rejected an ideal grasp"
             )
 
-    def test_king_accepts_slightly_angled(self):
-        """King and queen have relaxed angle tolerance per the spec overrides."""
+    def test_all_pieces_same_angle_tolerance(self):
+        """In uniform block mode all pieces have identical angle tolerance."""
         f = GraspFilter(top_down_tolerance_deg=15.0)
         profile = get_profile(PieceType.KING)
-        c = GraspCandidate(
-            position=(0.0, 0.0, profile.grasp_z),
-            orientation=Quaternion.top_down(0.0),
-            score=0.8,
-            approach_angle_deg=18.0,  # beyond default 15° but within king's 20°
-            finger_separation=profile.finger_separation_m,
-        )
-        ranked = f.filter_and_rank([c], PieceType.KING, profile.grasp_z)
-        assert len(ranked) == 1, "King should accept 18° approach angle"
+        # 14° should pass for every piece type (within default 15° tolerance)
+        for pt in PieceType:
+            c = GraspCandidate(
+                position=(0.0, 0.0, profile.grasp_z),
+                orientation=Quaternion.top_down(0.0),
+                score=0.8,
+                approach_angle_deg=14.0,
+                finger_separation=profile.finger_separation_m,
+            )
+            ranked = f.filter_and_rank([c], pt, profile.grasp_z)
+            assert len(ranked) == 1, f"{pt} should accept 14° approach angle"
 
 
 # ---------------------------------------------------------------------------
@@ -291,7 +308,6 @@ class TestFilterGpdCandidates:
     def test_basic_filter(self):
         cs = [_make(score=0.9), _make(angle_deg=90.0)]
         result = filter_gpd_candidates(cs, "P", _pawn_z())
-        # Only the valid one should survive
         assert len(result) == 1
 
     def test_empty_list(self):

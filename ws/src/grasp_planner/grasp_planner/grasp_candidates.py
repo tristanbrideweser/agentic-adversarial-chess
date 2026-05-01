@@ -47,28 +47,72 @@ class PieceType(Enum):
 
 
 # ---------------------------------------------------------------------------
-# Piece geometry constants (duplicated from move_translator for independence)
+# Piece geometry constants
 # ---------------------------------------------------------------------------
+# Current pieces are uniform blocks with letters on top.
+# All pieces share the same block dimensions — grasp Z and finger separation
+# are identical for every type.
+#
+# To switch to real (height-differentiated) pieces later:
+#   1. Set UNIFORM_BLOCK_PIECES = False
+#   2. Uncomment and fill in PIECE_PROFILE_OVERRIDES below
+#   3. No other code changes needed
+# ---------------------------------------------------------------------------
+
+UNIFORM_BLOCK_PIECES: bool = True
+
+BLOCK_HEIGHT_M:          float = 0.040
+BLOCK_GRASP_RATIO:       float = 0.60
+_BOARD_Z:                float = 0.762
+BLOCK_GRASP_Z:           float = round(_BOARD_Z + BLOCK_HEIGHT_M * BLOCK_GRASP_RATIO, 6)
+BLOCK_COLLISION_RADIUS:  float = 0.018
+BLOCK_FINGER_SEP:        float = round(BLOCK_COLLISION_RADIUS * 2 + 0.004, 4)
+
+# Uncomment entries when switching to real pieces
+PIECE_PROFILE_OVERRIDES: dict = {
+    # PieceType.PAWN:   dict(height_m=0.045, grasp_z=0.789, collision_radius_m=0.012, finger_separation_m=0.028),
+    # PieceType.ROOK:   dict(height_m=0.055, grasp_z=0.795, collision_radius_m=0.014, finger_separation_m=0.032),
+    # PieceType.KNIGHT: dict(height_m=0.060, grasp_z=0.798, collision_radius_m=0.015, finger_separation_m=0.034),
+    # PieceType.BISHOP: dict(height_m=0.065, grasp_z=0.801, collision_radius_m=0.013, finger_separation_m=0.030),
+    # PieceType.QUEEN:  dict(height_m=0.080, grasp_z=0.810, collision_radius_m=0.015, finger_separation_m=0.034),
+    # PieceType.KING:   dict(height_m=0.095, grasp_z=0.819, collision_radius_m=0.015, finger_separation_m=0.034),
+}
+
 
 @dataclass(frozen=True)
 class PieceProfile:
     """Physical profile used for grasp planning."""
     piece_type: PieceType
-    height_m: float           # total piece height
-    grasp_z: float            # absolute world Z for jaw centre (60% height)
-    collision_radius_m: float # approximate XY radius
-    finger_separation_m: float  # recommended gripper jaw gap at contact
+    height_m: float
+    grasp_z: float
+    collision_radius_m: float
+    finger_separation_m: float
 
 
-# Finger separation = 2 * collision_radius + 4 mm clearance
-PIECE_PROFILES: dict[PieceType, PieceProfile] = {
-    PieceType.PAWN:   PieceProfile(PieceType.PAWN,   0.045, 0.789, 0.012, 0.028),
-    PieceType.ROOK:   PieceProfile(PieceType.ROOK,   0.055, 0.795, 0.014, 0.032),
-    PieceType.KNIGHT: PieceProfile(PieceType.KNIGHT, 0.060, 0.798, 0.015, 0.034),
-    PieceType.BISHOP: PieceProfile(PieceType.BISHOP, 0.065, 0.801, 0.013, 0.030),
-    PieceType.QUEEN:  PieceProfile(PieceType.QUEEN,  0.080, 0.810, 0.015, 0.034),
-    PieceType.KING:   PieceProfile(PieceType.KING,   0.095, 0.819, 0.015, 0.034),
-}
+def _build_profiles() -> "dict[PieceType, PieceProfile]":
+    table = {}
+    for pt in PieceType:
+        if not UNIFORM_BLOCK_PIECES and pt in PIECE_PROFILE_OVERRIDES:
+            ov = PIECE_PROFILE_OVERRIDES[pt]
+            table[pt] = PieceProfile(
+                piece_type=pt,
+                height_m=ov["height_m"],
+                grasp_z=ov["grasp_z"],
+                collision_radius_m=ov["collision_radius_m"],
+                finger_separation_m=ov["finger_separation_m"],
+            )
+        else:
+            table[pt] = PieceProfile(
+                piece_type=pt,
+                height_m=BLOCK_HEIGHT_M,
+                grasp_z=BLOCK_GRASP_Z,
+                collision_radius_m=BLOCK_COLLISION_RADIUS,
+                finger_separation_m=BLOCK_FINGER_SEP,
+            )
+    return table
+
+
+PIECE_PROFILES: dict[PieceType, PieceProfile] = _build_profiles()
 
 
 def get_profile(piece_type: PieceType) -> PieceProfile:

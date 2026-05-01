@@ -3,17 +3,19 @@ lookup_grasps.py
 ================
 Precomputed top-down grasp lookup table.
 
-For a controlled Gazebo / lab environment with known piece positions and
-uniform cylindrical-ish piece shapes, top-down grasps are faster, more
-reliable, and need no point cloud.  This module provides a grasp for any
-(square, piece_type) pair without running GPD.
+For a controlled Gazebo / lab environment with uniform block pieces,
+top-down grasps are fast, reliable, and need no point cloud.
 
 The lookup table encodes:
   - Gripper approach direction: straight down (approach_angle = 0°)
-  - Jaw separation: matched to the piece's collision diameter + 4 mm clearance
-  - Grasp Z:  piece-type-specific (60 % of height above board surface)
-  - Yaw:  default 0 (fingers parallel to X axis).  Overrideable per square
-          if a neighbouring piece would cause a collision.
+  - Jaw separation: from PieceProfile.finger_separation_m
+  - Grasp Z: from PieceProfile.grasp_z (uniform for all block pieces)
+  - Yaw: default 0 (fingers parallel to X axis); overrideable per square
+         if a neighbouring piece would clip the open jaw.
+
+When UNIFORM_BLOCK_PIECES = True in grasp_candidates.py, every piece type
+returns the same grasp Z and finger separation.  Set it to False and fill
+in PIECE_PROFILE_OVERRIDES to get per-type values for real chess pieces.
 
 Usage
 -----
@@ -23,10 +25,6 @@ Usage
     result = planner.plan("e4", "P")   # white pawn on e4
     if result.success:
         pose = result.selected
-
-The planner also accepts an optional yaw hint (radians) to rotate the
-gripper around Z — useful when a neighbouring piece on the same rank/file
-would be clipped by the open jaw.
 """
 
 from __future__ import annotations
