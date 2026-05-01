@@ -18,7 +18,7 @@
   <depend>pcl_ros</depend>
 
   <!-- GPD ROS wrapper (optional — node degrades gracefully without it) -->
-  <exec_depend condition="$gpd_ros_available">gpd_ros</exec_depend>
+  <!-- <exec_depend condition="$gpd_ros_available">gpd_ros</exec_depend> -->
 
   <!-- Custom action interface (chess_interfaces/action/GraspPlanning) -->
   <depend>chess_interfaces</depend>
