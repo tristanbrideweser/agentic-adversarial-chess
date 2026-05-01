@@ -1,0 +1,7 @@
+# Request: position to evaluate, in standard FEN format.
+string fen
+---
+# Response: best move in UCI form (e.g. "e2e4"), empty on failure.
+string uci
+bool success
+string reason
