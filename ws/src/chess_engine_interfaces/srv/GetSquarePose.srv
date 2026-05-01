@@ -1,0 +1,22 @@
+# chess_interfaces/srv/GetSquarePose.srv
+#
+# Returns the world-frame pose of a chess board square.
+# Served at: /board_localization/get_square_pose
+
+# -----------------------------------------------------------------------
+# REQUEST
+# -----------------------------------------------------------------------
+
+# Algebraic square name, e.g. "e4", "a1", "h8" (case-insensitive)
+string square
+
+---
+# -----------------------------------------------------------------------
+# RESPONSE
+# -----------------------------------------------------------------------
+
+# World-frame pose of the square centre (on the board surface)
+geometry_msgs/PoseStamped pose
+
+bool   success
+string message

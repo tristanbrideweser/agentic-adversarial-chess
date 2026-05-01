@@ -1,0 +1,26 @@
+# chess_interfaces/srv/WorldToSquare.srv
+#
+# Reverse lookup: world-frame (x, y) position → nearest algebraic square.
+# Served at: /board_localization/world_to_square
+#
+# Useful for perception verification — given a detected piece centroid,
+# confirm which square it belongs to.
+
+# -----------------------------------------------------------------------
+# REQUEST
+# -----------------------------------------------------------------------
+
+# World-frame coordinates (metres)
+float64 x
+float64 y
+
+---
+# -----------------------------------------------------------------------
+# RESPONSE
+# -----------------------------------------------------------------------
+
+# Algebraic square name, e.g. "e4" (empty string on failure)
+string square
+
+bool   success
+string message

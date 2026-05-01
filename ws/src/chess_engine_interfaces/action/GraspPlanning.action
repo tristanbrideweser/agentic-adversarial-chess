@@ -1,0 +1,50 @@
+# chess_interfaces/action/GraspPlanning.action
+#
+# Plans a grasp pose for a chess piece on a given square.
+# Served at: /grasp_planner/plan
+#
+# Two modes (controlled by use_gpd and the node's 'mode' parameter):
+#   Lookup mode : precomputed top-down grasp, instant, no point cloud needed
+#   GPD mode    : live Grasp Pose Detection from /overhead_camera/points
+
+# -----------------------------------------------------------------------
+# GOAL
+# -----------------------------------------------------------------------
+
+# Algebraic square name, e.g. "e4"
+string square
+
+# FEN character of the piece on that square (e.g. "P", "q")
+string fen_char
+
+# Request GPD planning (subject to node-level 'mode' parameter override)
+bool use_gpd
+
+# Optional preferred gripper yaw in radians (used by lookup fallback)
+float32 yaw_hint
+
+---
+# -----------------------------------------------------------------------
+# RESULT
+# -----------------------------------------------------------------------
+
+bool    success
+string  failure_reason
+
+# Gripper jaw centre pose — world frame (m + quaternion xyzw)
+float64[3] position
+float64[4] orientation
+
+# Recommended jaw gap at contact (metres)
+float64 finger_separation
+
+# Which planner produced this result: "gpd" | "lookup"
+string source
+
+---
+# -----------------------------------------------------------------------
+# FEEDBACK
+# -----------------------------------------------------------------------
+
+# Human-readable progress string
+string status

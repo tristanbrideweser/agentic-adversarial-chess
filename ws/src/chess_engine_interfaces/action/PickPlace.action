@@ -1,0 +1,60 @@
+# chess_interfaces/action/PickPlace.action
+#
+# Executes one pick-and-place task for a Franka Panda arm.
+# One instance of this action server runs per arm, namespaced as:
+#   /white_panda/pick_place
+#   /black_panda/pick_place
+#
+# The server executes the 8-step sequence:
+#   approach → descend → grasp → lift → transit → lower → release → retract
+
+# -----------------------------------------------------------------------
+# GOAL
+# -----------------------------------------------------------------------
+
+# Task type from move_translator:
+#   "pick_and_place"  — normal move / castling sub-move
+#   "remove_piece"    — captured piece or promoting pawn → graveyard
+#   "place_reserve"   — reserve promotion piece → target square
+string task_type
+
+# FEN character of the piece being moved (e.g. "P", "q", "K")
+string piece_char
+
+# Gripper jaw centre at grasp point — world frame (m)
+float64[3] pick_position
+float64[4] pick_orientation     # quaternion (x, y, z, w)
+
+# Gripper jaw centre at release point — world frame (m)
+float64[3] place_position
+float64[4] place_orientation    # quaternion (x, y, z, w)
+
+# Recommended jaw gap at contact (from PieceProfile, metres)
+float64 finger_separation
+
+# Absolute world Z for gripper jaw centre at grasp (metres)
+float64 grasp_height
+
+# Force Cartesian interpolation for descent/lower phases
+bool use_cartesian
+
+---
+# -----------------------------------------------------------------------
+# RESULT
+# -----------------------------------------------------------------------
+
+bool    success
+string  failure_reason
+int32   waypoints_executed
+
+---
+# -----------------------------------------------------------------------
+# FEEDBACK
+# -----------------------------------------------------------------------
+
+# Current motion step label: approach | descend | grasp | lift |
+#                            transit  | lower   | release | retract
+string  current_step
+
+# Fraction of waypoints completed (0.0–1.0)
+float32 progress

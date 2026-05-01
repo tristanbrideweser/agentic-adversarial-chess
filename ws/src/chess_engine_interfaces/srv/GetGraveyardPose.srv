@@ -1,0 +1,24 @@
+# chess_interfaces/srv/GetGraveyardPose.srv
+#
+# Returns the world-frame pose of a graveyard slot for captured pieces.
+# Served at: /board_localization/get_graveyard_pose
+
+# -----------------------------------------------------------------------
+# REQUEST
+# -----------------------------------------------------------------------
+
+# "white" (captured white pieces) or "black" (captured black pieces)
+string color
+
+# Slot index 0–15 (one slot per capturable piece per side)
+int32 slot_index
+
+---
+# -----------------------------------------------------------------------
+# RESPONSE
+# -----------------------------------------------------------------------
+
+geometry_msgs/PoseStamped pose
+
+bool   success
+string message
