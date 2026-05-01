@@ -1,0 +1,46 @@
+/**:
+  ros__parameters:
+
+    # -----------------------------------------------------------------------
+    # Black arm (Panda at y=+0.45) pick-and-place parameters
+    # Identical to arm_white.yaml — both arms use the same motion profile.
+    # Override individual values here if the two arms need different tuning
+    # (e.g. if one arm has different cable routing / joint limits).
+    # -----------------------------------------------------------------------
+
+    approach_z_offset:  0.10
+    lift_z_offset:      0.10
+    transit_z_offset:   0.10
+    retract_z_offset:   0.10
+
+    max_retries: 3
+    planning_time_sec: 5.0
+
+    vel_transit:    0.7
+    vel_near_piece: 0.2
+    vel_approach:   0.3
+    vel_home:       0.5
+
+    accel_transit:    0.5
+    accel_near_piece: 0.2
+    accel_approach:   0.3
+    accel_home:       0.4
+
+    use_cartesian_descent: true
+
+    planning_pipeline:       "ompl"
+    planner_id:              "RRTConnectkConfigDefault"
+    num_planning_attempts:   3
+    max_velocity_scaling:    0.5
+    max_acceleration_scaling: 0.5
+    goal_position_tolerance:   0.001
+    goal_orientation_tolerance: 0.01
+    cartesian_step_size:     0.005
+    cartesian_jump_threshold: 0.0
+
+    gripper_open_width_m:      0.07
+    gripper_grasp_speed_mps:   0.05
+    gripper_grasp_force_n:     20.0
+    gripper_epsilon_inner:     0.005
+    gripper_epsilon_outer:     0.005
+    gripper_safe_min_width_m:  0.010
