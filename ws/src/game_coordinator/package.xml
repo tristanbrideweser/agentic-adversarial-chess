@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>game_coordinator</name>
+  <version>0.0.1</version>
+  <description>Top-level py_trees behavior tree orchestrating the agentic adversarial chess game loop.</description>
+  <maintainer email="sivachandrankarthik@gmail.com">Karthik Sivachandran</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>py_trees</depend>
+  <depend>py_trees_ros</depend>
+
+  <!-- Sibling packages whose interfaces this node consumes. Add their custom
+       msg/srv/action interface packages here once they are defined. -->
+  <depend>chess_engine_interfaces</depend>
+  <!-- <depend>grasp_planner_interfaces</depend> -->
+  <!-- <depend>arm_controller_interfaces</depend> -->
+  <!-- <depend>perception_interfaces</depend> -->
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
