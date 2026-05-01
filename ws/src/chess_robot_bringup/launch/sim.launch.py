@@ -1,5 +1,10 @@
 from launch import LaunchDescription
-from launch.actions import AppendEnvironmentVariable, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import (
+    AppendEnvironmentVariable,
+    IncludeLaunchDescription,
+    SetEnvironmentVariable,
+    TimerAction,
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
@@ -35,15 +40,34 @@ def generate_launch_description():
         arguments=[
             '/overhead_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
             '/overhead_camera/depth@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         ],
         output='screen',
     )
 
-    board_verifier = Node(
-        package='perception',
-        executable='board_verifier',
-        name='board_verifier',
-        output='screen',
+    spawn_robot = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                FindPackageShare('chess_robot_description'),
+                'launch',
+                'spawn_robot.launch.py',
+            ])
+        ),
     )
 
-    return LaunchDescription([force_sw, models_path, gz_sim, bridge, board_verifier])
+    # Delay board_verifier so the gz_ros2_control bridge has time to advertise
+    # /overhead_camera/depth before we subscribe — under WSL2 Fast-DDS the early
+    # discovery sometimes drops the publisher and no callbacks ever fire.
+    board_verifier = TimerAction(
+        period=8.0,
+        actions=[
+            Node(
+                package='perception',
+                executable='board_verifier',
+                name='board_verifier',
+                output='screen',
+            ),
+        ],
+    )
+
+    return LaunchDescription([force_sw, models_path, gz_sim, bridge, spawn_robot, board_verifier])

@@ -18,7 +18,7 @@ def load_yaml(path: Path) -> dict:
 
 
 def square_to_xy(rank_idx: int, file_idx: int, center_xy, square_size: float):
-    # Mirrors chess_robot_description/scripts/spawn_32_pawns.py:
+    # Mirrors chess_robot_description/scripts/spawn_pieces.py:
     # rank 1->8 along +X, file a->h along +Y, a1 at most-negative (x, y).
     dx = (rank_idx - 3.5) * square_size
     dy = (file_idx - 3.5) * square_size
