@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dual_fr3">
+  <!--
+    Dual FR3 setup. White on the rank 1-2 side (low world X). Black on the
+    rank 7-8 side (high world X), yawed 180 deg to face white.
+
+    With gazebo=true and connected_to=base (default), the franka_robot macro
+    skips emitting a parent link/joint, so we wire each arm's link0 to world
+    ourselves with the offsets below.
+
+    ros2_control on franka_robot is left false because upstream's bundled
+    franka_arm.ros2_control.xacro emits the gz_ros2_control system plugin
+    once per call (-> two controller_managers under dual-arm) and hardcodes
+    its `<parameters>` to `franka_gazebo_bringup` (not packaged for Humble).
+    Instead we include our forked franka_arm.ros2_control.xacro and call its
+    macro twice ourselves: white emits the plugin pointing at our YAML,
+    black skips the plugin emission.
+  -->
+
+  <xacro:arg name="white_xyz" default="-0.5 0 0.75"/>
+  <xacro:arg name="white_rpy" default="0 0 0"/>
+  <xacro:arg name="black_xyz" default="0.5 0 0.75"/>
+  <xacro:arg name="black_rpy" default="0 0 3.14159265359"/>
+  <xacro:arg name="controllers_yaml" default="$(find chess_robot_description)/config/fr3_controllers.yaml"/>
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:include filename="$(find chess_robot_description)/urdf/franka_arm.ros2_control.xacro"/>
+
+  <link name="world"/>
+
+  <!-- White arm body (no ros2_control here; we add our forked one below) -->
+  <xacro:franka_robot
+      robot_type="fr3"
+      arm_prefix="white_"
+      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+      accelerometer_config="${xacro.load_yaml('$(find franka_description)/robots/fr3/accelerometers.yaml')}"
+      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
+      hand="true"
+      ee_id="franka_hand"
+      gazebo="true"
+      ros2_control="false"/>
+  <joint name="world_to_white_arm" type="fixed">
+    <parent link="world"/>
+    <child link="white_fr3_link0"/>
+    <origin xyz="$(arg white_xyz)" rpy="$(arg white_rpy)"/>
+  </joint>
+  <xacro:franka_arm_ros2_control
+      robot_type="fr3"
+      robot_ip=""
+      arm_prefix="white_"
+      gazebo="true"
+      hand="true"
+      emit_gazebo_plugin="true"
+      controllers_yaml="$(arg controllers_yaml)"/>
+
+  <!-- Black arm body -->
+  <xacro:franka_robot
+      robot_type="fr3"
+      arm_prefix="black_"
+      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+      accelerometer_config="${xacro.load_yaml('$(find franka_description)/robots/fr3/accelerometers.yaml')}"
+      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
+      hand="true"
+      ee_id="franka_hand"
+      gazebo="true"
+      ros2_control="false"/>
+  <joint name="world_to_black_arm" type="fixed">
+    <parent link="world"/>
+    <child link="black_fr3_link0"/>
+    <origin xyz="$(arg black_xyz)" rpy="$(arg black_rpy)"/>
+  </joint>
+  <xacro:franka_arm_ros2_control
+      robot_type="fr3"
+      robot_ip=""
+      arm_prefix="black_"
+      gazebo="true"
+      hand="true"
+      emit_gazebo_plugin="false"
+      controllers_yaml="$(arg controllers_yaml)"/>
+</robot>

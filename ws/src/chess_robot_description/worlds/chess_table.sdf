@@ -95,8 +95,589 @@
             </friction>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name="frame">
           <geometry><box><size>0.45 0.45 0.03</size></box></geometry>
+          <material>
+            <ambient>0.10 0.06 0.04 1</ambient>
+            <diffuse>0.10 0.06 0.04 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a1">
+          <pose>-0.196875 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b1">
+          <pose>-0.196875 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c1">
+          <pose>-0.196875 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d1">
+          <pose>-0.196875 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e1">
+          <pose>-0.196875 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f1">
+          <pose>-0.196875 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g1">
+          <pose>-0.196875 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h1">
+          <pose>-0.196875 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a2">
+          <pose>-0.140625 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b2">
+          <pose>-0.140625 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c2">
+          <pose>-0.140625 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d2">
+          <pose>-0.140625 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e2">
+          <pose>-0.140625 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f2">
+          <pose>-0.140625 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g2">
+          <pose>-0.140625 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h2">
+          <pose>-0.140625 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a3">
+          <pose>-0.084375 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b3">
+          <pose>-0.084375 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c3">
+          <pose>-0.084375 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d3">
+          <pose>-0.084375 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e3">
+          <pose>-0.084375 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f3">
+          <pose>-0.084375 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g3">
+          <pose>-0.084375 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h3">
+          <pose>-0.084375 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a4">
+          <pose>-0.028125 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b4">
+          <pose>-0.028125 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c4">
+          <pose>-0.028125 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d4">
+          <pose>-0.028125 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e4">
+          <pose>-0.028125 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f4">
+          <pose>-0.028125 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g4">
+          <pose>-0.028125 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h4">
+          <pose>-0.028125 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a5">
+          <pose>0.028125 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b5">
+          <pose>0.028125 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c5">
+          <pose>0.028125 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d5">
+          <pose>0.028125 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e5">
+          <pose>0.028125 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f5">
+          <pose>0.028125 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g5">
+          <pose>0.028125 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h5">
+          <pose>0.028125 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a6">
+          <pose>0.084375 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b6">
+          <pose>0.084375 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c6">
+          <pose>0.084375 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d6">
+          <pose>0.084375 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e6">
+          <pose>0.084375 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f6">
+          <pose>0.084375 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g6">
+          <pose>0.084375 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h6">
+          <pose>0.084375 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a7">
+          <pose>0.140625 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b7">
+          <pose>0.140625 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c7">
+          <pose>0.140625 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d7">
+          <pose>0.140625 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e7">
+          <pose>0.140625 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f7">
+          <pose>0.140625 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g7">
+          <pose>0.140625 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h7">
+          <pose>0.140625 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_a8">
+          <pose>0.196875 -0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_b8">
+          <pose>0.196875 -0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_c8">
+          <pose>0.196875 -0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_d8">
+          <pose>0.196875 -0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_e8">
+          <pose>0.196875 0.028125 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_f8">
+          <pose>0.196875 0.084375 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_g8">
+          <pose>0.196875 0.140625 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.93 0.85 0.73 1</ambient>
+            <diffuse>0.93 0.85 0.73 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <visual name="sq_h8">
+          <pose>0.196875 0.196875 0.015500 0 0 0</pose>
+          <geometry><box><size>0.05625 0.05625 0.001</size></box></geometry>
+          <material>
+            <ambient>0.18 0.11 0.07 1</ambient>
+            <diffuse>0.18 0.11 0.07 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
         </visual>
       </link>
     </model>

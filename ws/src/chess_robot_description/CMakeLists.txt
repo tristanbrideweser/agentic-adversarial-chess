@@ -19,7 +19,15 @@ install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/spawn_32_pawns.py
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(PROGRAMS scripts/spawn_pieces.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

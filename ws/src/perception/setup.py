@@ -12,6 +12,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/config', ['config/camera_params.yaml']),
     ],
+    scripts=['scripts/occupancy_view.py'],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='sandov22',
