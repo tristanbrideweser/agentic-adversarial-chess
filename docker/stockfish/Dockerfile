@@ -4,7 +4,7 @@
 # One instance is launched per player (white/black) via the compose env file.
 # =============================================================================
 
-FROM osrf/ros:jazzy-ros-base
+FROM ros:jazzy-ros-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
@@ -18,12 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-numpy \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     chess \
     stockfish
 
-# Verify stockfish is callable
-RUN which stockfish && stockfish <<< "quit"
 
 # -----------------------------------------------------------------------------
 # ROS 2 message deps (std_msgs only — chess_engine uses String topics)

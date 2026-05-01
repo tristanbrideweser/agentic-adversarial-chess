@@ -24,7 +24,6 @@
 #   docker compose build --no-cache gpd
 # =============================================================================
 
-version: "3.9"
 
 x-ros-env: &ros-env
   ROS_DISTRO: jazzy
@@ -47,8 +46,8 @@ services:
   # ---------------------------------------------------------------------------
   dev:
     build:
-      context: .
-      dockerfile: dev/Dockerfile
+      context: dev
+      dockerfile: Dockerfile
     image: chess-robots/dev:latest
     container_name: chess_dev
 

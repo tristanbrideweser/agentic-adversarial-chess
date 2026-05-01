@@ -70,7 +70,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # -----------------------------------------------------------------------------
 # Python packages (no ROS equivalent)
 # -----------------------------------------------------------------------------
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     chess \
     stockfish \
     py-trees==2.2.3 \
@@ -86,7 +86,6 @@ WORKDIR ${WORKSPACE}
 
 # Copy source into the image at build time.
 # In development, this layer is overridden by the bind-mount in compose.
-COPY src/ src/ 2>/dev/null || true
 
 # rosdep install (skips missing packages gracefully in case src is empty)
 RUN rosdep update && \

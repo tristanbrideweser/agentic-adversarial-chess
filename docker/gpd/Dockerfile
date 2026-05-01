@@ -80,7 +80,7 @@ RUN bash -c "\
 # =============================================================================
 # Stage 2: runtime image (slimmer — drop build tools)
 # =============================================================================
-FROM osrf/ros:jazzy-ros-base AS gpd-runtime
+FROM ros:jazzy-ros-base AS gpd-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
@@ -104,7 +104,7 @@ COPY --from=gpd-builder /opt/gpd_ros_ws/install /opt/gpd_ros_ws/install
 RUN ldconfig
 
 # Python deps for the action server node
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     numpy \
     open3d
 
