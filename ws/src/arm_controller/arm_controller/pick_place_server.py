@@ -125,8 +125,11 @@ class PickPlaceServer(Node):
             home_position_white  = (0.0, -0.45, 1.00),
             home_position_black  = (0.0, +0.45, 1.00),
         )
+        # Planning group name must match SRDF: "white_arm" or "black_arm"
+        moveit_group = f"{arm_color}_arm"
         plan_cfg = PlanningConfig(
-            planning_time_sec = self.get_parameter("planning_time_sec").value,
+            planning_time_sec  = self.get_parameter("planning_time_sec").value,
+            move_group_name    = moveit_group,
         )
 
         self._max_retries         = self.get_parameter("max_retries").value

@@ -11,7 +11,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", [f"resource/{package_name}"]),
         (f"share/{package_name}", ["package.xml"]),
-        (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
+        (os.path.join("share", package_name, "config"), glob(os.path.join(os.path.dirname(__file__), "config", "*.yaml"))),
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
     ],
     install_requires=["setuptools"],
@@ -23,7 +23,6 @@ setup(
         "service for the chess robot system."
     ),
     license="MIT",
-    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "board_tf_broadcaster  = board_localization.tf_broadcaster:main",

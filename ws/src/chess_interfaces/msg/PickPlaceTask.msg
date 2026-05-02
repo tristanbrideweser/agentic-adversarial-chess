@@ -1,0 +1,9 @@
+string task_type
+string piece_char
+string piece_name
+string pick_square
+string place_square
+geometry_msgs/Pose pick_pose
+geometry_msgs/Pose place_pose
+float64 grasp_height
+string active_arm

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>chess_engine_interfaces</name>
+  <name>chess_interfaces</name>
   <version>0.0.1</version>
   <description>Service and message interfaces for the chess_engine package.</description>
   <maintainer email="sivachandrankarthik@gmail.com">Karthik Sivachandran</maintainer>

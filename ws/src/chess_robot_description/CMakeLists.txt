@@ -30,6 +30,10 @@ install(DIRECTORY urdf
 install(PROGRAMS scripts/spawn_pieces.py
   DESTINATION lib/${PROJECT_NAME}
 )
+install(DIRECTORY scripts/
+  DESTINATION share/${PROJECT_NAME}/scripts
+  USE_SOURCE_PERMISSIONS
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -37,5 +41,9 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(DIRECTORY moveit_config/
+  DESTINATION share/${PROJECT_NAME}/moveit_config
+)
 
 ament_package()

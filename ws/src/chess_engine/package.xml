@@ -9,7 +9,7 @@
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
-  <depend>chess_engine_interfaces</depend>
+  <depend>chess_interfaces</depend>
 
   <exec_depend>python3-chess</exec_depend>
 

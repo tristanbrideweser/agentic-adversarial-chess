@@ -1,5 +1,6 @@
 """
 move_decomposer.py
+==================
 Core logic: given a python-chess Board (pre-move state) and a chess.Move,
 produce an ordered list of PickPlaceTask objects that the arm controller
 can execute sequentially.
@@ -466,4 +467,3 @@ def task_queue_to_json(tasks: List[PickPlaceTask]) -> str:
 def task_queue_from_json(json_str: str) -> List[dict]:
     """Deserialise a task queue from a /pick_place_tasks JSON string."""
     return json.loads(json_str)
-import chess

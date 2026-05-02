@@ -11,7 +11,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", [f"resource/{package_name}"]),
         (f"share/{package_name}", ["package.xml"]),
-        (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
+        (os.path.join("share", package_name, "config"), glob(os.path.join(os.path.dirname(__file__), "config", "*.yaml"))),
     ],
     install_requires=[
         "setuptools",
@@ -25,7 +25,6 @@ setup(
         "task queues for the Franka Panda arms."
     ),
     license="MIT",
-    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "move_translator_node = move_translator.move_translator_node:main",

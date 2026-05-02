@@ -18,8 +18,8 @@
     # packages.  Do not change without updating all packages.
     # -----------------------------------------------------------------------
     square_size:     0.05      # edge length of one square (m)
-    a1_x:           -0.175     # world X of a1 square centre at nominal pose (m)
-    a1_y:           -0.175     # world Y of a1 square centre at nominal pose (m)
+    a1_x:           -0.196875     # world X of a1 square centre at nominal pose (m)
+    a1_y:           -0.196875     # world Y of a1 square centre at nominal pose (m)
 
     # -----------------------------------------------------------------------
     # Arm base positions (world frame) — for reach validation and diagnostics

@@ -1,0 +1,30 @@
+moveit_simple_controller_manager:
+  controller_names:
+    - white_arm_controller
+    - black_arm_controller
+
+white_arm_controller:
+  type: FollowJointTrajectory
+  action_ns: follow_joint_trajectory
+  default: true
+  joints:
+    - white_fr3_joint1
+    - white_fr3_joint2
+    - white_fr3_joint3
+    - white_fr3_joint4
+    - white_fr3_joint5
+    - white_fr3_joint6
+    - white_fr3_joint7
+
+black_arm_controller:
+  type: FollowJointTrajectory
+  action_ns: follow_joint_trajectory
+  default: true
+  joints:
+    - black_fr3_joint1
+    - black_fr3_joint2
+    - black_fr3_joint3
+    - black_fr3_joint4
+    - black_fr3_joint5
+    - black_fr3_joint6
+    - black_fr3_joint7

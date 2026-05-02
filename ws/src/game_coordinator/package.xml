@@ -14,7 +14,7 @@
 
   <!-- Sibling packages whose interfaces this node consumes. Add their custom
        msg/srv/action interface packages here once they are defined. -->
-  <depend>chess_engine_interfaces</depend>
+  <depend>chess_interfaces</depend>
   <!-- <depend>grasp_planner_interfaces</depend> -->
   <!-- <depend>arm_controller_interfaces</depend> -->
   <!-- <depend>perception_interfaces</depend> -->

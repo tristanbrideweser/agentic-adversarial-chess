@@ -7,7 +7,7 @@ import py_trees
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from chess_engine_interfaces.srv import GetMove
+from chess_interfaces.srv import GetMove
 
 # --- blackboard keys -------------------------------------------------------
 # Continuously written by the data-gathering parallel branch (subscribers).

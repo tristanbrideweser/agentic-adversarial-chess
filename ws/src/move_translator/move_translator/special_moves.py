@@ -1,5 +1,6 @@
 """
 special_moves.py
+================
 Validation helpers and edge-case detection for the four special move
 categories: castling, en passant, promotion, and promotion-with-capture.
 
@@ -313,8 +314,3 @@ def suggest_fallback_arm(square: str) -> Optional[str]:
         # Either arm could handle this; caller decides which is primary
         return "either"
     return None
-# castling
-
-# en passant
-
-# promotion

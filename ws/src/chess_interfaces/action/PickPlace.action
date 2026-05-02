@@ -1,0 +1,16 @@
+string task_type
+string piece_char
+float64[3] pick_position
+float64[4] pick_orientation
+float64[3] place_position
+float64[4] place_orientation
+float64 finger_separation
+float64 grasp_height
+bool use_cartesian
+---
+bool success
+string failure_reason
+int32 waypoints_executed
+---
+string current_step
+float32 progress

@@ -19,7 +19,6 @@ setup(
     maintainer_email='sandov22@todo.todo',
     description='Board state and piece perception for the chess robots.',
     license='TODO',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'board_verifier = perception.board_verifier:main',

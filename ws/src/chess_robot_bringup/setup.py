@@ -20,7 +20,6 @@ setup(
     maintainer_email='sandov22@todo.todo',
     description='Top-level launch and config for the chess robot stack.',
     license='TODO',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
         ],

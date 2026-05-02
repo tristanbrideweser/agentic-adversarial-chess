@@ -1,0 +1,15 @@
+joint_limits:
+  white_fr3_joint1: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint2: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint3: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint4: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint5: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint6: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}
+  white_fr3_joint7: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint1: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint2: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint3: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint4: {has_velocity_limits: true, max_velocity: 2.175, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint5: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint6: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}
+  black_fr3_joint7: {has_velocity_limits: true, max_velocity: 2.610, has_acceleration_limits: false, max_acceleration: 0}

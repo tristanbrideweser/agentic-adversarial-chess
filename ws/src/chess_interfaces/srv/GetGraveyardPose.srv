@@ -1,0 +1,6 @@
+string color
+int32 slot_index
+---
+geometry_msgs/PoseStamped pose
+bool success
+string message

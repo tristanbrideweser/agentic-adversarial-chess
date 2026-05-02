@@ -83,4 +83,16 @@ def generate_launch_description():
     # Add them back once gripper_controllers is installed and the YAML type
     # is updated.
 
-    return LaunchDescription([rsp, spawn, jsb, white_arm, black_arm])
+    # With fake hardware, controller_manager is not loaded by Gazebo plugin.
+    # It must be launched explicitly as ros2_control_node.
+    ros2_control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[
+            {"robot_description": robot_description},
+            resolved_yaml,
+        ],
+        output="screen",
+    )
+
+    return LaunchDescription([rsp, spawn, ros2_control_node, jsb, white_arm, black_arm])

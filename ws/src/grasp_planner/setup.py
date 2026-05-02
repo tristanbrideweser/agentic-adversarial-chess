@@ -11,7 +11,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", [f"resource/{package_name}"]),
         (f"share/{package_name}", ["package.xml"]),
-        (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
+        (os.path.join("share", package_name, "config"), glob(os.path.join(os.path.dirname(__file__), "config", "*.yaml"))),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -22,7 +22,6 @@ setup(
         "Supports GPD (live point cloud) and precomputed lookup-table modes."
     ),
     license="MIT",
-    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "grasp_planner_node = grasp_planner.grasp_planner_node:main",

@@ -1,0 +1,13 @@
+string square
+string fen_char
+bool use_gpd
+float32 yaw_hint
+---
+bool success
+string failure_reason
+float64[3] position
+float64[4] orientation
+float64 finger_separation
+string source
+---
+string status

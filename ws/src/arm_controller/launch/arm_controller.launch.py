@@ -49,6 +49,7 @@ def generate_launch_description() -> LaunchDescription:
     white_node = Node(
         package="arm_controller",
         executable="pick_place_server_white",
+        additional_env={"PYTHONPATH": "/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/root/chess_ws/install/perception/lib/python3.12/site-packages:/root/chess_ws/install/move_translator/lib/python3.12/site-packages:/root/chess_ws/install/grasp_planner/lib/python3.12/site-packages:/root/chess_ws/install/game_coordinator/lib/python3.12/site-packages:/root/chess_ws/install/chess_engine/lib/python3.12/site-packages:/root/chess_ws/install/board_localization/lib/python3.12/site-packages:/root/chess_ws/install/arm_controller/lib/python3.12/site-packages:/root/chess_ws/install/chess_interfaces/lib/python3.12/site-packages:/opt/franka_ws/install/franka_msgs/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages"},
         name="white_panda_pick_place_server",
         namespace="white_panda",
         output="screen",
@@ -62,6 +63,7 @@ def generate_launch_description() -> LaunchDescription:
     black_node = Node(
         package="arm_controller",
         executable="pick_place_server_black",
+        additional_env={"PYTHONPATH": "/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/root/chess_ws/install/perception/lib/python3.12/site-packages:/root/chess_ws/install/move_translator/lib/python3.12/site-packages:/root/chess_ws/install/grasp_planner/lib/python3.12/site-packages:/root/chess_ws/install/game_coordinator/lib/python3.12/site-packages:/root/chess_ws/install/chess_engine/lib/python3.12/site-packages:/root/chess_ws/install/board_localization/lib/python3.12/site-packages:/root/chess_ws/install/arm_controller/lib/python3.12/site-packages:/root/chess_ws/install/chess_interfaces/lib/python3.12/site-packages:/opt/franka_ws/install/franka_msgs/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages"},
         name="black_panda_pick_place_server",
         namespace="black_panda",
         output="screen",

@@ -1,6 +1,6 @@
 """Stockfish service.
 
-Exposes /stockfish/{color}/get_move (chess_engine_interfaces/srv/GetMove):
+Exposes /stockfish/{color}/get_move (chess_interfaces/srv/GetMove):
   Request : FEN string of the position to evaluate
   Response: best UCI move + success flag + optional reason
 
@@ -14,7 +14,7 @@ from rclpy.node import Node
 import chess
 import chess.engine
 
-from chess_engine_interfaces.srv import GetMove
+from chess_interfaces.srv import GetMove
 
 
 class StockfishNode(Node):
