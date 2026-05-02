@@ -1,0 +1,55 @@
+ Image chess-robots/stockfish:latest Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 609B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.13kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/ros:jazzy-ros-base
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/8] FROM docker.io/library/ros:jazzy-ros-base@sha256:e9b9b98c1a867673789dfa1cb622b780e1ae6e5a0c235b0340d83c2b46f6171c
+#5 resolve docker.io/library/ros:jazzy-ros-base@sha256:e9b9b98c1a867673789dfa1cb622b780e1ae6e5a0c235b0340d83c2b46f6171c 0.0s done
+#5 DONE 0.0s
+
+#6 [2/8] RUN apt-get update && apt-get install -y --no-install-recommends     stockfish     python3-pip     python3-numpy     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/8] RUN pip3 install --no-cache-dir --break-system-packages     chess     stockfish
+#7 CACHED
+
+#8 [internal] load build context
+#8 transferring context: 45B done
+#8 DONE 0.0s
+
+#9 [4/8] RUN which stockfish && stockfish <<< "quit"
+#9 0.142 /bin/sh: 1: Syntax error: redirection unexpected
+#9 ERROR: process "/bin/sh -c which stockfish && stockfish <<< \"quit\"" did not complete successfully: exit code: 2
+------
+ > [4/8] RUN which stockfish && stockfish <<< "quit":
+0.142 /bin/sh: 1: Syntax error: redirection unexpected
+------
+Dockerfile:26
+
+--------------------
+
+  24 |     
+
+  25 |     # Verify stockfish is callable
+
+  26 | >>> RUN which stockfish && stockfish <<< "quit"
+
+  27 |     
+
+  28 |     # -----------------------------------------------------------------------------
+
+--------------------
+
+failed to solve: process "/bin/sh -c which stockfish && stockfish <<< \"quit\"" did not complete successfully: exit code: 2
+

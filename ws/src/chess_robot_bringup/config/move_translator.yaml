@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    publish_rate_hz:  0.0    # publish on change only
+    use_tf_poses:     false  # analytic geometry (faster, no TF dependency)

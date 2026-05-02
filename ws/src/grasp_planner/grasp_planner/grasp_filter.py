@@ -61,15 +61,21 @@ class FilterConfig:
         self.angle_weight = angle_weight   # weight for angle score in composite
 
 
-# Per-piece-type overrides: taller pieces tolerate slightly more angle
-# (they have a larger graspable band), smaller pieces need tighter Z
+# Per-piece-type filter overrides.
+#
+# In UNIFORM_BLOCK_PIECES mode all pieces are the same height and shape,
+# so a single uniform tolerance applies to every type.  The overrides dict
+# is intentionally empty — no piece needs special treatment.
+#
+# When switching to real pieces (UNIFORM_BLOCK_PIECES = False), uncomment
+# the entries below to restore per-type tuning:
 PIECE_FILTER_OVERRIDES: dict[PieceType, dict] = {
-    PieceType.PAWN:   {"height_tolerance_m": 0.006},   # short — be precise
-    PieceType.ROOK:   {"height_tolerance_m": 0.008},
-    PieceType.KNIGHT: {"height_tolerance_m": 0.008, "top_down_tolerance_deg": 20.0},  # irregular shape
-    PieceType.BISHOP: {"height_tolerance_m": 0.008},
-    PieceType.QUEEN:  {"height_tolerance_m": 0.012, "top_down_tolerance_deg": 20.0},
-    PieceType.KING:   {"height_tolerance_m": 0.015, "top_down_tolerance_deg": 20.0},
+    # PieceType.PAWN:   {"height_tolerance_m": 0.006},
+    # PieceType.ROOK:   {"height_tolerance_m": 0.008},
+    # PieceType.KNIGHT: {"height_tolerance_m": 0.008, "top_down_tolerance_deg": 20.0},
+    # PieceType.BISHOP: {"height_tolerance_m": 0.008},
+    # PieceType.QUEEN:  {"height_tolerance_m": 0.012, "top_down_tolerance_deg": 20.0},
+    # PieceType.KING:   {"height_tolerance_m": 0.015, "top_down_tolerance_deg": 20.0},
 }
 
 

@@ -12,7 +12,10 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
-from grasp_planner.grasp_candidates import PieceType, get_profile, PIECE_PROFILES
+from grasp_planner.grasp_candidates import (
+    PieceType, get_profile, PIECE_PROFILES,
+    BLOCK_GRASP_Z, BLOCK_FINGER_SEP, UNIFORM_BLOCK_PIECES,
+)
 from grasp_planner.lookup_grasps import LookupGraspPlanner, _square_xy
 
 
@@ -81,25 +84,42 @@ class TestLookupGraspPlanner:
         assert result.selected.position[0] == pytest.approx(x, abs=1e-6)
         assert result.selected.position[1] == pytest.approx(y, abs=1e-6)
 
-    @pytest.mark.parametrize("fen_char,expected_z", [
-        ("P", 0.789), ("p", 0.789),
-        ("R", 0.795), ("N", 0.798),
-        ("B", 0.801), ("Q", 0.810),
-        ("K", 0.819), ("k", 0.819),
-    ])
-    def test_plan_grasp_z(self, fen_char, expected_z):
+    def test_plan_grasp_z_uniform(self):
+        """All pieces return the same grasp Z in uniform block mode."""
         p = LookupGraspPlanner()
-        result = p.plan("a1", fen_char)
-        assert result.selected.position[2] == pytest.approx(expected_z, abs=1e-3)
+        for fen_char in "PRNBQKprnbqk":
+            result = p.plan("a1", fen_char)
+            assert result.selected.position[2] == pytest.approx(BLOCK_GRASP_Z, abs=1e-3), (
+                f"Piece '{fen_char}': expected uniform BLOCK_GRASP_Z={BLOCK_GRASP_Z}, "
+                f"got {result.selected.position[2]}"
+            )
 
-    @pytest.mark.parametrize("fen_char,expected_sep", [
-        ("P", 0.028), ("R", 0.032), ("N", 0.034),
-        ("B", 0.030), ("Q", 0.034), ("K", 0.034),
-    ])
-    def test_plan_finger_separation(self, fen_char, expected_sep):
+    def test_plan_grasp_z_matches_profile(self):
+        """Grasp Z reported by plan() matches the PieceProfile."""
         p = LookupGraspPlanner()
-        result = p.plan("e4", fen_char)
-        assert result.selected.finger_separation == pytest.approx(expected_sep, abs=1e-3)
+        for fen_char in "PRNBQKprnbqk":
+            result = p.plan("a1", fen_char)
+            profile = get_profile(PieceType.from_fen_char(fen_char))
+            assert result.selected.position[2] == pytest.approx(profile.grasp_z, abs=1e-3)
+
+    def test_plan_finger_separation_uniform(self):
+        """All pieces return the same finger separation in uniform block mode."""
+        p = LookupGraspPlanner()
+        for fen_char in "PRNBQKprnbqk":
+            result = p.plan("e4", fen_char)
+            assert result.selected.finger_separation == pytest.approx(BLOCK_FINGER_SEP, abs=1e-3), (
+                f"Piece '{fen_char}': expected BLOCK_FINGER_SEP={BLOCK_FINGER_SEP}"
+            )
+
+    def test_plan_finger_separation_matches_profile(self):
+        """Finger separation from plan() matches PieceProfile."""
+        p = LookupGraspPlanner()
+        for fen_char in "PRNBQKprnbqk":
+            result = p.plan("e4", fen_char)
+            profile = get_profile(PieceType.from_fen_char(fen_char))
+            assert result.selected.finger_separation == pytest.approx(
+                profile.finger_separation_m, abs=1e-3
+            )
 
     def test_plan_all_64_squares_succeed(self):
         p = LookupGraspPlanner()

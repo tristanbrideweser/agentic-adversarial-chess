@@ -20,6 +20,10 @@ from grasp_planner.grasp_candidates import (
     PieceType,
     Quaternion,
     PIECE_PROFILES,
+    BLOCK_GRASP_Z,
+    BLOCK_HEIGHT_M,
+    BLOCK_FINGER_SEP,
+    UNIFORM_BLOCK_PIECES,
     get_profile,
     get_profile_from_fen,
 )
@@ -55,27 +59,20 @@ class TestPieceProfiles:
         for pt in PieceType:
             assert pt in PIECE_PROFILES
 
-    @pytest.mark.parametrize("pt,expected_height", [
-        (PieceType.PAWN,   0.045),
-        (PieceType.ROOK,   0.055),
-        (PieceType.KNIGHT, 0.060),
-        (PieceType.BISHOP, 0.065),
-        (PieceType.QUEEN,  0.080),
-        (PieceType.KING,   0.095),
-    ])
-    def test_heights(self, pt, expected_height):
-        assert get_profile(pt).height_m == pytest.approx(expected_height, abs=1e-6)
+    def test_all_heights_uniform(self):
+        """In block mode all pieces share BLOCK_HEIGHT_M."""
+        for pt in PieceType:
+            assert get_profile(pt).height_m == pytest.approx(BLOCK_HEIGHT_M, abs=1e-6), pt
 
-    @pytest.mark.parametrize("pt,expected_z", [
-        (PieceType.PAWN,   0.789),
-        (PieceType.ROOK,   0.795),
-        (PieceType.KNIGHT, 0.798),
-        (PieceType.BISHOP, 0.801),
-        (PieceType.QUEEN,  0.810),
-        (PieceType.KING,   0.819),
-    ])
-    def test_grasp_z(self, pt, expected_z):
-        assert get_profile(pt).grasp_z == pytest.approx(expected_z, abs=1e-3)
+    def test_all_grasp_z_uniform(self):
+        """In block mode all pieces share BLOCK_GRASP_Z."""
+        for pt in PieceType:
+            assert get_profile(pt).grasp_z == pytest.approx(BLOCK_GRASP_Z, abs=1e-3), pt
+
+    def test_all_finger_sep_uniform(self):
+        """In block mode all pieces share BLOCK_FINGER_SEP."""
+        for pt in PieceType:
+            assert get_profile(pt).finger_separation_m == pytest.approx(BLOCK_FINGER_SEP, abs=1e-3), pt
 
     def test_finger_separation_larger_than_diameter(self):
         """Finger gap should be at least 2 × collision_radius."""

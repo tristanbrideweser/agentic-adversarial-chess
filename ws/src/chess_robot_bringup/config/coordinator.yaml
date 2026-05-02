@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    # Start the game automatically after all nodes are up
+    auto_start:          true
+
+    # Maximum time (seconds) to wait for each subsystem before aborting
+    startup_timeout_sec: 30.0
+
+    # How many times to retry a failed grasp before pausing for intervention
+    max_grasp_retries:   3
+
+    # How many times to retry a failed arm motion before pausing
+    max_motion_retries:  2
+
+    # Run perception board verification after each move
+    verify_after_move:   true
+
+    # Topic / service timeouts
+    stockfish_timeout_sec:    5.0
+    pick_place_timeout_sec:   60.0
+    grasp_plan_timeout_sec:   10.0
+    board_verify_timeout_sec: 10.0

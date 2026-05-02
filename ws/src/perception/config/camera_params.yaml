@@ -1,0 +1,13 @@
+camera:
+  pose_xyz: [0.0, 0.0, 1.2]
+  hfov: 1.5
+  image_w: 640
+  image_h: 480
+
+detection:
+  depth_topic: /overhead_camera/depth
+  occupancy_topic: /chess/occupancy
+  publish_rate_hz: 5.0
+  empty_depth_threshold: 0.01
+  roi_shrink: 0.8
+  min_occupied_fraction: 0.1

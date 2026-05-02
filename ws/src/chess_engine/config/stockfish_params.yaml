@@ -1,0 +1,6 @@
+# chess_engine/config/stockfish_params.yaml
+depth:      15        # search depth
+time_limit: 2.0       # seconds per move
+elo:        ""        # optional ELO cap
+threads:    2
+hash_mb:    256

@@ -1,0 +1,224 @@
+# =============================================================================
+# chess-robots docker-compose.yaml
+#
+# Services:
+#   dev          - Main ROS 2 Jazzy development environment (MoveIt, Gazebo,
+#                  move_translator, grasp_planner, arm_controller, etc.)
+#   stockfish_white - Stockfish engine for White player
+#   stockfish_black - Stockfish engine for Black player
+#   gpd          - GPD grasp pose detection action server
+#
+# Networking:
+#   All services share network_mode: host so ROS 2 DDS discovery works
+#   without manual configuration.  ROS_DOMAIN_ID=42 isolates this stack
+#   from other ROS 2 processes on the same machine.
+#
+# Usage:
+#   # Full stack (sim + engines + GPD):
+#   docker compose up
+#
+#   # Dev shell only:
+#   docker compose run --rm dev bash
+#
+#   # Rebuild after Dockerfile changes:
+#   docker compose build --no-cache gpd
+# =============================================================================
+
+
+x-ros-env: &ros-env
+  ROS_DISTRO: jazzy
+  RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+  ROS_DOMAIN_ID: "42"
+  # Prevent DDS from multicasting outside the host network
+  CYCLONEDDS_URI: >
+    <CycloneDDS>
+      <Domain>
+        <General>
+          <NetworkInterfaceAddress>lo</NetworkInterfaceAddress>
+        </General>
+      </Domain>
+    </CycloneDDS>
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # dev: main ROS 2 workspace — Gazebo, MoveIt 2, coordinator, translator, etc.
+  # ---------------------------------------------------------------------------
+  dev:
+    build:
+      context: dev
+      dockerfile: Dockerfile
+    image: chess-robots/dev:latest
+    container_name: chess_dev
+
+    # Share the host network so Gazebo GUI, RViz, and DDS all work
+    network_mode: host
+
+    environment:
+      <<: *ros-env
+      # Allow Gazebo GUI to connect to the host X server
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: "1"
+      # Gazebo resource paths
+      GZ_SIM_RESOURCE_PATH: /root/chess_ws/src/chess_robot_description/models
+
+    volumes:
+      # Bind-mount the whole workspace source so edits on the host are
+      # immediately visible inside the container.
+      - ./..:/root/chess_ws/src:rw
+      # Persist the colcon build cache between container restarts
+      - chess_build_cache:/root/chess_ws/build
+      - chess_install_cache:/root/chess_ws/install
+      - chess_log_cache:/root/chess_ws/log
+      # X11 socket for Gazebo / RViz GUI
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Allow GUI apps (grant access before starting: xhost +local:docker)
+      - /dev/dri:/dev/dri
+
+    devices:
+      # GPU passthrough for Gazebo rendering (remove if no GPU)
+      - /dev/dri
+
+    # ipc: host is required for shared-memory transport (FastDDS/CycloneDDS)
+    ipc: host
+    pid: host
+
+    stdin_open: true
+    tty: true
+
+    # Default: drop into a shell.  Override with a launch file in CI.
+    command: bash
+
+    depends_on:
+      - stockfish_white
+      - stockfish_black
+      - gpd
+
+  # ---------------------------------------------------------------------------
+  # stockfish_white: Stockfish engine for the White player
+  # ---------------------------------------------------------------------------
+  stockfish_white:
+    build:
+      context: stockfish
+      dockerfile: Dockerfile
+    image: chess-robots/stockfish:latest
+    container_name: chess_stockfish_white
+
+    network_mode: host
+    ipc: host
+
+    env_file:
+      - stockfish/stockfish.env
+
+    environment:
+      <<: *ros-env
+      # Passed as ROS params — the stockfish_node reads these at startup
+      STOCKFISH_COLOR: white
+      STOCKFISH_NODE_NAME: stockfish_white
+      # White plays at full strength
+      STOCKFISH_DEPTH: "15"
+      STOCKFISH_ELO: ""      # empty = no limit
+
+    volumes:
+      # Same workspace mount so the node can find chess_engine package
+      - ./..:/root/chess_ws/src:ro
+      - chess_build_cache:/root/chess_ws/build:ro
+      - chess_install_cache:/root/chess_ws/install:ro
+
+    command: >
+      ros2 run chess_engine stockfish_node
+      --ros-args
+      -p color:=white
+      -p depth:=15
+      -p time_limit:=2.0
+      -p threads:=2
+      -p hash_mb:=256
+      --remap __node:=stockfish_white
+      --remap ~/get_move:=/stockfish/white/get_move
+
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # stockfish_black: Stockfish engine for the Black player
+  # ---------------------------------------------------------------------------
+  stockfish_black:
+    build:
+      context: stockfish
+      dockerfile: Dockerfile
+    image: chess-robots/stockfish:latest
+    container_name: chess_stockfish_black
+
+    network_mode: host
+    ipc: host
+
+    env_file:
+      - stockfish/stockfish.env
+
+    environment:
+      <<: *ros-env
+      STOCKFISH_COLOR: black
+      STOCKFISH_NODE_NAME: stockfish_black
+      # Black plays weaker (ELO-limited) for asymmetric games
+      STOCKFISH_DEPTH: "10"
+      STOCKFISH_ELO: "1500"
+
+    volumes:
+      - ./..:/root/chess_ws/src:ro
+      - chess_build_cache:/root/chess_ws/build:ro
+      - chess_install_cache:/root/chess_ws/install:ro
+
+    command: >
+      ros2 run chess_engine stockfish_node
+      --ros-args
+      -p color:=black
+      -p depth:=10
+      -p time_limit:=2.0
+      -p elo:=1500
+      -p threads:=2
+      -p hash_mb:=256
+      --remap __node:=stockfish_black
+      --remap ~/get_move:=/stockfish/black/get_move
+
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # gpd: GPD grasp pose detection action server
+  # ---------------------------------------------------------------------------
+  gpd:
+    build:
+      context: gpd
+      dockerfile: Dockerfile
+    image: chess-robots/gpd:latest
+    container_name: chess_gpd
+
+    network_mode: host
+    ipc: host
+
+    environment:
+      <<: *ros-env
+      GPD_MODELS_DIR: /usr/local/share/gpd/models
+      # Set to 1 to enable CUDA if the host has a compatible GPU and
+      # nvidia-container-toolkit is installed
+      USE_CUDA: "0"
+
+    # Optional: GPU passthrough for CUDA-accelerated GPD
+    # Uncomment if nvidia-container-toolkit is installed:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+    command: python3 /gpd_server.py
+
+    restart: unless-stopped
+
+# =============================================================================
+# Named volumes (persist colcon build artifacts between container restarts)
+# =============================================================================
+volumes:
+  chess_build_cache:
+  chess_install_cache:
+  chess_log_cache:
