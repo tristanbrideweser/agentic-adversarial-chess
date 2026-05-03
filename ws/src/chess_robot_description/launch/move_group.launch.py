@@ -24,7 +24,7 @@ def generate_launch_description():
         kinematics_yaml = yaml.safe_load(f)
 
     with open(controllers) as f:
-        controllers_yaml = yaml.safe_load(f)
+        moveit_controllers_yaml = yaml.safe_load(f)
 
     with open(ompl_yaml) as f:
         ompl_config = yaml.safe_load(f)
@@ -60,7 +60,10 @@ def generate_launch_description():
             robot_description,
             {"robot_description_semantic": robot_description_semantic},
             kinematics_yaml,
+            moveit_controllers_yaml,
             {
+                "moveit_controller_manager":
+                    "moveit_simple_controller_manager/MoveItSimpleControllerManager",
                 "planning_pipelines": ["ompl"],
                 "default_planning_pipeline": "ompl",
                 "ompl": ompl_config,

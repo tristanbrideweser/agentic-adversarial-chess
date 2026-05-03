@@ -40,7 +40,8 @@
       hand="true"
       ee_id="franka_hand"
       gazebo="false"
-      ros2_control="false"/>
+      ros2_control="false"
+      connected_to=""/>
   <joint name="world_to_white_arm" type="fixed">
     <parent link="world"/>
     <child link="white_fr3_link0"/>
@@ -67,7 +68,8 @@
       hand="true"
       ee_id="franka_hand"
       gazebo="false"
-      ros2_control="false"/>
+      ros2_control="false"
+      connected_to=""/>
   <joint name="world_to_black_arm" type="fixed">
     <parent link="world"/>
     <child link="black_fr3_link0"/>
