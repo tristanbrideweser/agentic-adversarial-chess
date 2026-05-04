@@ -120,13 +120,14 @@ DOCKER_CMD=(
     --privileged
     --security-opt "seccomp=unconfined"
 
-    # Workspace: entire repo mounted as the colcon src tree
-    --volume "${WS_SRC_DIR}/ws/src:${DOCKER_WS}/src:rw"
+    # FIX 1: Map the new top-level src folder directly
+    --volume "${REPO_DIR}/src:${DOCKER_WS}/src:rw"
 
-    # Persist build/install/log across container restarts
-    --volume "chess_build_cache:${DOCKER_WS}/build"
-    --volume "chess_install_cache:${DOCKER_WS}/install"
-    --volume "chess_log_cache:${DOCKER_WS}/log"
+    # FIX 2: Switch from named volumes to bind-mounts for build artifacts
+    # This ensures Tristan can delete 'build'/'install' folders from the host.
+    --volume "${REPO_DIR}/build:${DOCKER_WS}/build:rw"
+    --volume "${REPO_DIR}/install:${DOCKER_WS}/install:rw"
+    --volume "${REPO_DIR}/log:${DOCKER_WS}/log:rw"
 
     # Timezone
     --volume "/etc/localtime:/etc/localtime:ro"

@@ -1,0 +1,4 @@
+stockfish_black:
+  ros__parameters:
+    skill_level: 5
+    time_limit: 2.0
