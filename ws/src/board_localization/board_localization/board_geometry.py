@@ -70,8 +70,8 @@ def square_to_board_pose(square: str) -> BoardPose:
     _validate_square(square)
     file_idx = ord(square[0]) - ord("a")
     rank_idx = int(square[1]) - 1
-    x = round(A1_X + file_idx * SQUARE_SIZE, 6)
-    y = round(A1_Y + rank_idx * SQUARE_SIZE, 6)
+    x = round(A1_X + rank_idx * SQUARE_SIZE, 6)
+    y = round(A1_Y + file_idx * SQUARE_SIZE, 6)
     return BoardPose(x=x, y=y, z=BOARD_SURFACE_Z)
 
 

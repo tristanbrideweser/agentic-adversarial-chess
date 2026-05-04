@@ -1,3 +1,4 @@
+# move_translator/config/board_params.yaml
 /**:
   ros__parameters:
 
@@ -5,9 +6,9 @@
     # Board surface and geometry
     # -----------------------------------------------------------------------
     board_surface_z: 0.762          # world Z of the board surface (m)
-    square_size: 0.05               # edge length of one square (m)
-    a1_x: -0.175                    # world X of the a1 square centre (m)
-    a1_y: -0.175                    # world Y of the a1 square centre (m)
+    square_size: 0.05625            # edge length of one square (m)
+    a1_x: -0.196875                    # world X of the a1 square centre (m)
+    a1_y: -0.196875                   # world Y of the a1 square centre (m)
 
     # -----------------------------------------------------------------------
     # Arm base positions (world frame)

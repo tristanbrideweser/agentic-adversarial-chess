@@ -1,3 +1,4 @@
+# chess_robot_description/config/board_params.yaml
 board:
   center_xy: [0.0, 0.0]
   size: 0.45
