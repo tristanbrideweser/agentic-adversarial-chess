@@ -1,0 +1,48 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000
+    use_sim_time: true
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    white_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    white_hand_controller:
+      type: position_controllers/GripperActionController
+    black_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    black_hand_controller:
+      type: position_controllers/GripperActionController
+
+white_arm_controller:
+  ros__parameters:
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    joints:
+      - white_fr3_joint1
+      - white_fr3_joint2
+      - white_fr3_joint3
+      - white_fr3_joint4
+      - white_fr3_joint5
+      - white_fr3_joint6
+      - white_fr3_joint7
+
+white_hand_controller:
+  ros__parameters:
+    joint: white_fr3_finger_joint1
+
+black_arm_controller:
+  ros__parameters:
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    joints:
+      - black_fr3_joint1
+      - black_fr3_joint2
+      - black_fr3_joint3
+      - black_fr3_joint4
+      - black_fr3_joint5
+      - black_fr3_joint6
+      - black_fr3_joint7
+
+black_hand_controller:
+  ros__parameters:
+    joint: black_fr3_finger_joint1

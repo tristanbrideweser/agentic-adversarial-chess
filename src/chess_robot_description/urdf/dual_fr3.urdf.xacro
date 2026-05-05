@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dual_fr3">
+  <xacro:arg name="white_xyz" default="-0.5 0 0.75"/>
+  <xacro:arg name="black_xyz" default="0.5 0 0.75"/>
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_arm.xacro"/>
+  <xacro:include filename="$(find franka_description)/end_effectors/common/utils.xacro"/>
+  <xacro:include filename="$(find franka_description)/end_effectors/common/franka_hand.xacro"/>
+  <xacro:include filename="$(find chess_robot_description)/urdf/franka_arm.ros2_control.xacro"/>
+
+  <!-- White arm: attached to world -->
+  <xacro:franka_arm
+      robot_type="fr3"
+      arm_prefix="white_"
+      connected_to="world"
+      xyz="$(arg white_xyz)"
+      rpy="0 0 0"
+      gazebo="true" />
+
+  <!-- Black arm: no connected_to to avoid re-declaring white_fr3_link0 -->
+  <xacro:franka_arm
+      robot_type="fr3"
+      arm_prefix="black_"
+      connected_to=""
+      xyz="0 0 0"
+      rpy="0 0 0"
+      gazebo="true" />
+
+  <!-- Manually attach black_fr3_link0 to white_fr3_link0 -->
+  <joint name="white_to_black_base_joint" type="fixed">
+    <parent link="white_fr3_link0"/>
+    <child link="black_fr3_link0"/>
+    <origin xyz="1.0 0 0" rpy="0 0 3.14159"/>
+  </joint>
+
+  <xacro:franka_hand
+      robot_type="fr3"
+      arm_prefix="white_"
+      connected_to="white_fr3_link8"
+      ee_id="franka_hand_white"
+      ee_inertials="${xacro.load_yaml('$(find franka_description)/end_effectors/franka_hand/inertials.yaml')}"
+      gazebo="true" />
+
+  <xacro:franka_arm_ros2_control
+      arm_prefix="white_"
+      gazebo="true"
+      emit_gazebo_plugin="true"
+      controllers_yaml="$(find chess_robot_description)/config/fr3_controllers.yaml"/>
+
+  <xacro:franka_hand
+      robot_type="fr3"
+      arm_prefix="black_"
+      connected_to="black_fr3_link8"
+      ee_id="franka_hand_black"
+      ee_inertials="${xacro.load_yaml('$(find franka_description)/end_effectors/franka_hand/inertials.yaml')}"
+      gazebo="true" />
+
+  <xacro:franka_arm_ros2_control
+      arm_prefix="black_"
+      gazebo="true"
+      emit_gazebo_plugin="false"
+      controllers_yaml="$(find chess_robot_description)/config/fr3_controllers.yaml"/>
+
+</robot>

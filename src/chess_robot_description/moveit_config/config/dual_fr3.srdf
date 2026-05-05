@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<robot name="dual_fr3">
+  <group name="white_arm">
+    <chain base_link="white_fr3_link0" tip_link="white_fr3_hand_tcp"/>
+  </group>
+  <group name="white_hand">
+    <joint name="white_fr3_finger_joint1"/>
+  </group>
+  <group name="black_arm">
+    <chain base_link="black_fr3_link0" tip_link="black_fr3_hand_tcp"/>
+  </group>
+  <group name="black_hand">
+    <joint name="black_fr3_finger_joint1"/>
+  </group>
+
+  <end_effector name="white_ee" parent_link="white_fr3_hand_tcp" group="white_hand" parent_group="white_arm"/>
+  <end_effector name="black_ee" parent_link="black_fr3_hand_tcp" group="black_hand" parent_group="black_arm"/>
+
+  <disable_collisions link1="white_fr3_link0" link2="black_fr3_link0" reason="Adjacent"/>
+  
+  <passive_joint name="white_fr3_finger_joint1"/>
+  <passive_joint name="white_fr3_finger_joint2"/>
+  <passive_joint name="black_fr3_finger_joint1"/>
+  <passive_joint name="black_fr3_finger_joint2"/>
+</robot>

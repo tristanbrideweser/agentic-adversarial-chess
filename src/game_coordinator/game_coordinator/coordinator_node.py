@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+"""Game coordinator behavior tree.
+
+Top-level orchestrator for the agentic adversarial chess robot.
+
+Tree shape
+----------
+Root: Parallel (SuccessOnAll)
+├── DataGathering — subscribers populate the blackboard from ROS topics
+│   ├── /board_state       → BOARD_STATE_FEN
+│   ├── /game_over         → GAME_OVER
+│   └── /pick_place_tasks  → TASK_QUEUE_MSG (raw msg; parsed by WaitForTaskQueue)
+└── GameLoop — Repeat(forever) wrapping the per-turn sequence
+    └── PlayOneTurn: Sequence
+        ├── CheckGameOver         (FAILURE → exits the Repeat)
+        ├── SnapshotPreMoveFen
+        ├── DetermineActivePlayer
+        ├── RequestMove           [stub: chess_engine]
+        ├── PublishApplyMove
+        ├── WaitForBoardUpdate
+        ├── WaitForTaskQueue      [stub-dep: move_translator]
+        └── IterateTaskQueue
+            └── ExecuteOneTask: Sequence
+                ├── PopNextTask
+                ├── Retry(3) → PlanGrasp         [stub: grasp_planner]
+                ├── Retry(3) → ExecutePickPlace  [stub: arm_controller]
+                └── VerifyBoard                  [stub: perception]
+"""
+
+import rclpy
+import py_trees
+import py_trees_ros
+from std_msgs.msg import String
+
+from . import behaviors as B
+from .behaviors import init_blackboard
+
+
+def _data_gathering() -> py_trees.behaviour.Behaviour:
+    fen_to_bb = py_trees_ros.subscribers.ToBlackboard(
+        name="FenToBlackboard",
+        topic_name="/board_state",
+        topic_type=String,
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
+        blackboard_variables={B.BOARD_STATE_FEN: "data"},
+        clearing_policy=py_trees.common.ClearingPolicy.NEVER,
+    )
+    game_over_to_bb = py_trees_ros.subscribers.ToBlackboard(
+        name="GameOverToBlackboard",
+        topic_name="/game_over",
+        topic_type=String,
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
+        blackboard_variables={B.GAME_OVER: "data"},
+        clearing_policy=py_trees.common.ClearingPolicy.NEVER,
+    )
+    tasks_to_bb = py_trees_ros.subscribers.ToBlackboard(
+        name="TaskQueueToBlackboard",
+        topic_name="/pick_place_tasks",
+        topic_type=String,
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
+        blackboard_variables={B.TASK_QUEUE_MSG: None},  # whole msg
+        clearing_policy=py_trees.common.ClearingPolicy.NEVER,
+    )
+    # game_over and pick_place_tasks have no publisher at startup;
+    # wrap them so the DataGathering parallel does not fail immediately.
+    game_over_safe = py_trees.decorators.FailureIsSuccess(
+        name="GameOverSafe", child=game_over_to_bb
+    )
+    tasks_safe = py_trees.decorators.FailureIsSuccess(
+        name="TaskQueueSafe", child=tasks_to_bb
+    )
+    fen_safe = py_trees.decorators.FailureIsSuccess(
+        name="FenSafe", child=fen_to_bb
+    )
+    return py_trees.composites.Parallel(
+        name="DataGathering",
+        policy=py_trees.common.ParallelPolicy.SuccessOnAll(synchronise=False),
+        children=[fen_safe, game_over_safe, tasks_safe],
+    )
+
+
+def _execute_one_task(node) -> py_trees.behaviour.Behaviour:
+    plan_grasp = py_trees.decorators.Retry(
+        name="PlanGraspRetry",
+        child=B.PlanGrasp(node),
+        num_failures=3,
+    )
+    pick_place = py_trees.decorators.Retry(
+        name="PickPlaceRetry",
+        child=B.ExecutePickPlace(node),
+        num_failures=3,
+    )
+    return py_trees.composites.Sequence(
+        name="ExecuteOneTask",
+        memory=True,
+        children=[
+            B.PopNextTask(),
+            plan_grasp,
+            pick_place,
+            B.VerifyBoard(node),
+        ],
+    )
+
+
+def _play_one_turn(node) -> py_trees.behaviour.Behaviour:
+    return py_trees.composites.Sequence(
+        name="PlayOneTurn",
+        memory=True,
+        children=[
+            B.CheckGameOver(),
+            B.SnapshotPreMoveFen(),
+            B.DetermineActivePlayer(),
+            B.RequestMove(node),
+            B.PublishApplyMove(node),
+            B.WaitForBoardUpdate(node),
+            B.WaitForTaskQueue(node),
+            B.IterateTaskQueue(_execute_one_task(node)),
+        ],
+    )
+
+
+def build_tree(node) -> py_trees.behaviour.Behaviour:
+    # Wrap PlayOneTurn in FailureIsSuccess so transient failures (e.g.
+    # no FEN yet, planning timeout) just retry next tick instead of
+    # killing the Repeat loop. CheckGameOver is first in the sequence and
+    # its FAILURE → SUCCESS here, so game-over is detected via the
+    # post-tick handler watching the blackboard GAME_OVER key.
+    play_one_turn_safe = py_trees.decorators.FailureIsSuccess(
+        name="PlayOneTurnSafe", child=_play_one_turn(node)
+    )
+    game_loop = py_trees.decorators.Repeat(
+        name="GameLoop",
+        child=play_one_turn_safe,
+        num_success=-1,
+    )
+    game_loop_safe = py_trees.decorators.FailureIsSuccess(
+        name="GameLoopSafe", child=game_loop
+    )
+    return py_trees.composites.Parallel(
+        name="Root",
+        policy=py_trees.common.ParallelPolicy.SuccessOnAll(synchronise=False),
+        children=[_data_gathering(), game_loop_safe],
+    )
+
+
+def main():
+    rclpy.init()
+    node = rclpy.create_node("game_coordinator")
+
+    init_blackboard()
+    root = build_tree(node)
+
+    tree = py_trees_ros.trees.BehaviourTree(root=root, unicode_tree_debug=False)
+    try:
+        tree.setup(node=node, timeout=15.0)
+    except py_trees_ros.exceptions.TimedOutError as e:
+        node.get_logger().error(f"tree setup timed out: {e}")
+        rclpy.try_shutdown()
+        return
+
+    _shutdown_flag = [False]
+    def on_post_tick(t: py_trees_ros.trees.BehaviourTree):
+        if _shutdown_flag[0]:
+            return
+        bb = py_trees.blackboard.Client(name="shutdown_check")
+        bb.register_key(B.GAME_OVER, access=py_trees.common.Access.READ)
+        try:
+            reason = bb.get(B.GAME_OVER)
+            if reason:
+                node.get_logger().info(f"game over ({reason}) — shutting down")
+                _shutdown_flag[0] = True
+                rclpy.try_shutdown()
+        except Exception:
+            pass
+
+    tree.add_post_tick_handler(on_post_tick)
+    tree.tick_tock(period_ms=200.0)
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        tree.shutdown()
+        node.destroy_node()
+        rclpy.try_shutdown()
+
+
+if __name__ == "__main__":
+    main()
