@@ -5,6 +5,7 @@ MoveIt 2 motion planning and execution client for one Franka Panda arm.
 """
 from __future__ import annotations
 import math
+import threading
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from .waypoint_planner import MotionWaypoint, GripperState
@@ -55,6 +56,12 @@ class MoveItClient:
         self._planning_scene = None
         self._robot_model = None
         self._connected = False
+        self._latest_joint_state = None
+        self._js_lock = threading.Lock()
+
+    def _joint_state_callback(self, msg):
+        with self._js_lock:
+            self._latest_joint_state = msg
 
     def connect(self, node) -> bool:
         self._node = node
@@ -63,6 +70,12 @@ class MoveItClient:
             from moveit.core.robot_state import RobotState         # type: ignore
             import rclpy
             from rcl_interfaces.srv import GetParameters
+            from sensor_msgs.msg import JointState
+
+            # Subscribe to joint states continuously — callbacks handled by node's executor
+            node.create_subscription(
+                JointState, '/joint_states', self._joint_state_callback, 10
+            )
 
             def get_param(service_name, param_name, timeout=5.0):
                 client = node.create_client(GetParameters, service_name)
@@ -99,15 +112,13 @@ class MoveItClient:
                         "kinematics_solver_timeout": 0.05,
                     }
                 },
-                "planning_pipelines": ["ompl"],
+                "planning_pipelines": {"pipeline_names": ["ompl"]},
                 "default_planning_pipeline": "ompl",
                 "ompl": {
                     "planning_plugins": ["ompl_interface/OMPLPlanner"],
                     "request_adapters": [
                         "default_planning_request_adapters/ResolveConstraintFrames",
                         "default_planning_request_adapters/ValidateWorkspaceBounds",
-                        "default_planning_request_adapters/CheckStartStateBounds",
-                        "default_planning_request_adapters/CheckStartStateCollision",
                     ],
                     "response_adapters": [
                         "default_planning_response_adapters/AddTimeOptimalParameterization",
@@ -115,11 +126,20 @@ class MoveItClient:
                         "default_planning_response_adapters/DisplayMotionPath",
                     ],
                 },
+                "ompl_rrtc": {
+                    "plan_request_params": {
+                        "planning_attempts": 5,
+                        "planning_pipeline": "ompl",
+                        "planner_id": "RRTConnect",
+                        "max_velocity_scaling_factor": 0.5,
+                        "max_acceleration_scaling_factor": 0.5,
+                        "planning_time": 5.0,
+                    }
+                },
                 "sensors": [""],
             }
 
             import yaml as _yaml
-            # Write params file with node name matching what MoveItPy creates
             node_name = f"moveit_{self.arm_name}"
             params_file = f"/tmp/moveit_{self.arm_name}_params.yaml"
             moveit_node_params = {
@@ -154,6 +174,51 @@ class MoveItClient:
             return False
 
     # ------------------------------------------------------------------
+    # Start state helper
+    # ------------------------------------------------------------------
+
+    def _get_start_state(self):
+        """Build a RobotState from cached /joint_states with finger joints at open position.
+        
+        Uses a cached joint state (updated by a subscriber) to avoid calling
+        spin_once on an already-spinning executor.
+        """
+        try:
+            from moveit.core.robot_state import RobotState as _RS
+            _robot_model = self._moveit.get_robot_model()
+            _rs = _RS(_robot_model)
+            _rs.set_to_default_values()
+
+            with self._js_lock:
+                js = self._latest_joint_state
+
+            if js is not None:
+                for _jn, _jp in zip(js.name, js.position):
+                    try:
+                        _rs.set_joint_group_position(_jn, [_jp])
+                    except Exception:
+                        pass
+            else:
+                self._node.get_logger().warn(
+                    "No cached joint state yet — using defaults for start state"
+                )
+
+            # Always set finger joints explicitly to open (0.04m)
+            # Finger joints have no hardware interface in sim so are never in /joint_states
+            _prefix = self.arm_name.replace("_panda", "_fr3")
+            for _jn in [f"{_prefix}_finger_joint1", f"{_prefix}_finger_joint2"]:
+                try:
+                    _rs.set_joint_group_position(_jn, [0.04])
+                except Exception:
+                    pass
+
+            _rs.update()
+            return _rs
+        except Exception as _ex:
+            self._node.get_logger().warn(f"Could not build explicit start state: {_ex}")
+            return None
+
+    # ------------------------------------------------------------------
     # Planning
     # ------------------------------------------------------------------
 
@@ -161,12 +226,21 @@ class MoveItClient:
         self,
         target_position: Tuple[float, float, float],
         target_orientation: Tuple[float, float, float, float],
+        velocity_scaling: float = 0.5,
+        acceleration_scaling: float = 0.5,
     ) -> PlanResult:
         if not self._connected:
             return PlanResult(success=False, failure_reason="MoveIt not connected")
         try:
             from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion  # noqa
-            self._move_group.set_start_state_to_current_state()
+
+            # Set start state with explicit finger joints to avoid invalid start state
+            _rs = self._get_start_state()
+            if _rs is not None:
+                self._move_group.set_start_state(_rs)
+            else:
+                self._move_group.set_start_state_to_current_state()
+
             target_pose = PoseStamped()
             target_pose.header.frame_id = "world"
             target_pose.pose.position = Point(
@@ -184,7 +258,11 @@ class MoveItClient:
                 pose_stamped_msg=target_pose,
                 pose_link=f"{self.arm_name.replace('_panda', '_fr3')}_hand_tcp",
             )
-            plan_result = self._move_group.plan()
+            from moveit.planning import PlanRequestParameters
+            plan_params = PlanRequestParameters(self._moveit, "ompl_rrtc")
+            plan_params.max_velocity_scaling_factor = velocity_scaling
+            plan_params.max_acceleration_scaling_factor = acceleration_scaling
+            plan_result = self._move_group.plan(plan_params)
             if plan_result and hasattr(plan_result, "trajectory"):
                 return PlanResult(
                     success=True,
@@ -236,7 +314,11 @@ class MoveItClient:
         if not self._connected:
             return PlanResult(success=False, failure_reason="MoveIt not connected")
         try:
-            self._move_group.set_start_state_to_current_state()
+            _rs = self._get_start_state()
+            if _rs is not None:
+                self._move_group.set_start_state(_rs)
+            else:
+                self._move_group.set_start_state_to_current_state()
             self._move_group.set_goal_state(configuration_name="ready")
             plan = self._move_group.plan()
             if plan and hasattr(plan, "trajectory"):

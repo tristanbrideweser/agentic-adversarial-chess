@@ -18,8 +18,7 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 import chess
 from std_msgs.msg import String
 
-from src.chess_engine.chess_engine.fen_parser import parse_fen
-
+from chess_engine.fen_parser import parse_fen
 
 # /board_state is the authoritative game-state plane. Publish with
 # TRANSIENT_LOCAL durability so late-joining subscribers (e.g. move_translator

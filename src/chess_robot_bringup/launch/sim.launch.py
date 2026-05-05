@@ -43,14 +43,10 @@ def generate_launch_description():
     # -------------------------------------------------------------------------
     set_gz_resource_path = SetEnvironmentVariable(
         name="GZ_SIM_RESOURCE_PATH",
-        value=PathJoinSubstitution([description_pkg, "models"]),
+        value="/opt/franka_ws/install/franka_description/share"
+              ":/root/chess_ws/install/chess_robot_description/share/chess_robot_description/models",
     )
-    set_franka_path = SetEnvironmentVariable(
-        name="GZ_SIM_RESOURCE_PATH",
-        value="/opt/franka_ws/install/franka_description/share:"
-            + "/root/chess_ws/install/chess_robot_description/share/chess_robot_description/models",
-    )
-
+    
     # -------------------------------------------------------------------------
     # 1. Gazebo Harmonic
     # -------------------------------------------------------------------------
@@ -299,6 +295,15 @@ def generate_launch_description():
     ])
 
     # -------------------------------------------------------------------------
+    # 12. Finger joint state publisher (fingers have no hardware interface in sim)
+    finger_pub = Node(
+        package="chess_robot_bringup",
+        executable="publish_finger_states",
+        name="finger_state_publisher",
+        output="screen",
+    )
+
+    # -------------------------------------------------------------------------
     # Assembly
     # -------------------------------------------------------------------------
     return LaunchDescription(args + [
@@ -319,4 +324,5 @@ def generate_launch_description():
         arm_controllers,
         set_pose,
         coordinator,
+        finger_pub,
     ])

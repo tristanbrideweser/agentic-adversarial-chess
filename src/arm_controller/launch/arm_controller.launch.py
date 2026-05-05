@@ -35,7 +35,8 @@ def generate_launch_description() -> LaunchDescription:
         namespace="white_panda",
         output="screen",
         parameters=[
-            PathJoinSubstitution([pkg, "config", "arm_white.yaml"]),
+            PathJoinSubstitution([pkg, "config", "arm_white.yaml"]), # or arm_black
+            PathJoinSubstitution([pkg, "config", "kinematics.yaml"]),
             {"use_sim_time": LaunchConfiguration("use_sim_time")},
         ],
         condition=IfCondition(launch_white),

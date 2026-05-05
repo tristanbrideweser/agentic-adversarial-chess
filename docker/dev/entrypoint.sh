@@ -22,13 +22,12 @@ fi
 export CYCLONEDDS_URI="<CycloneDDS><Domain><General><NetworkInterfaceAddress>lo</NetworkInterfaceAddress></General></Domain></CycloneDDS>"
 export PYTHONPATH=/opt/ros/${ROS_DISTRO}/lib/python3.12/site-packages:${PYTHONPATH:-}
 export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/${ROS_DISTRO}/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}
-export GZ_SIM_RESOURCE_PATH=${WORKSPACE}/src:${GZ_SIM_RESOURCE_PATH:-}
+# Combine them into one clean export
+export GZ_SIM_RESOURCE_PATH=/opt/franka_ws/install/franka_description/share:${WORKSPACE}/install/chess_robot_description/share:${GZ_SIM_RESOURCE_PATH:-}
 
 # 5. Stockfish symlink fallback
 if [ ! -f /usr/bin/stockfish ] && [ -f /usr/games/stockfish ]; then
     ln -sf /usr/games/stockfish /usr/bin/stockfish 2>/dev/null || true
 fi
-
-export GZ_SIM_RESOURCE_PATH=/opt/franka_ws/install/franka_description/share:${GZ_SIM_RESOURCE_PATH}
 
 exec "$@"

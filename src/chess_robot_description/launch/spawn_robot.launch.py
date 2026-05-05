@@ -44,7 +44,6 @@ def generate_launch_description():
         parameters=[{"robot_description": robot_description, "use_sim_time": True}],
     )
 
-    # Spawn robot into Gazebo — controller_manager comes from gz_ros2_control plugin
     spawn = Node(
         package="ros_gz_sim",
         executable="create",
@@ -63,10 +62,7 @@ def generate_launch_description():
     white_arm = spawner("white_arm_controller")
     black_arm = spawner("black_arm_controller")
 
-    # rsp starts immediately so robot_description is available
-    # spawn fires at 3s to give Gazebo time to load the world
-    # controller spawners fire at 8s to give gz_ros2_control time to start
-    spawn_with_delay      = TimerAction(period=3.0, actions=[spawn])
-    controller_spawners   = TimerAction(period=8.0, actions=[jsb, white_arm, black_arm])
+    spawn_with_delay    = TimerAction(period=3.0,  actions=[spawn])
+    controller_spawners = TimerAction(period=10.0, actions=[jsb, white_arm, black_arm])
 
     return LaunchDescription([rsp, spawn_with_delay, controller_spawners])

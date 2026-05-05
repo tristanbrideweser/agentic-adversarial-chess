@@ -1,19 +1,15 @@
 controller_manager:
   ros__parameters:
     update_rate: 1000
-
+    use_sim_time: true
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-
     white_arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-
     white_hand_controller:
       type: position_controllers/GripperActionController
-
     black_arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-
     black_hand_controller:
       type: position_controllers/GripperActionController
 

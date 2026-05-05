@@ -61,10 +61,21 @@ def _data_gathering() -> py_trees.behaviour.Behaviour:
         blackboard_variables={B.TASK_QUEUE_MSG: None},  # whole msg
         clearing_policy=py_trees.common.ClearingPolicy.NEVER,
     )
+    # game_over and pick_place_tasks have no publisher at startup;
+    # wrap them so the DataGathering parallel does not fail immediately.
+    game_over_safe = py_trees.decorators.FailureIsSuccess(
+        name="GameOverSafe", child=game_over_to_bb
+    )
+    tasks_safe = py_trees.decorators.FailureIsSuccess(
+        name="TaskQueueSafe", child=tasks_to_bb
+    )
+    fen_safe = py_trees.decorators.FailureIsSuccess(
+        name="FenSafe", child=fen_to_bb
+    )
     return py_trees.composites.Parallel(
         name="DataGathering",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(synchronise=False),
-        children=[fen_to_bb, game_over_to_bb, tasks_to_bb],
+        children=[fen_safe, game_over_safe, tasks_safe],
     )
 
 
@@ -109,15 +120,26 @@ def _play_one_turn(node) -> py_trees.behaviour.Behaviour:
 
 
 def build_tree(node) -> py_trees.behaviour.Behaviour:
+    # Wrap PlayOneTurn in FailureIsSuccess so transient failures (e.g.
+    # no FEN yet, planning timeout) just retry next tick instead of
+    # killing the Repeat loop. CheckGameOver is first in the sequence and
+    # its FAILURE → SUCCESS here, so game-over is detected via the
+    # post-tick handler watching the blackboard GAME_OVER key.
+    play_one_turn_safe = py_trees.decorators.FailureIsSuccess(
+        name="PlayOneTurnSafe", child=_play_one_turn(node)
+    )
     game_loop = py_trees.decorators.Repeat(
         name="GameLoop",
-        child=_play_one_turn(node),
-        num_success=-1,  # repeat forever; CheckGameOver's FAILURE exits the loop
+        child=play_one_turn_safe,
+        num_success=-1,
+    )
+    game_loop_safe = py_trees.decorators.FailureIsSuccess(
+        name="GameLoopSafe", child=game_loop
     )
     return py_trees.composites.Parallel(
         name="Root",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(synchronise=False),
-        children=[_data_gathering(), game_loop],
+        children=[_data_gathering(), game_loop_safe],
     )
 
 
@@ -136,10 +158,20 @@ def main():
         rclpy.try_shutdown()
         return
 
+    _shutdown_flag = [False]
     def on_post_tick(t: py_trees_ros.trees.BehaviourTree):
-        if t.root.status == py_trees.common.Status.FAILURE:
-            node.get_logger().info("root FAILURE — shutting down")
-            rclpy.try_shutdown()
+        if _shutdown_flag[0]:
+            return
+        bb = py_trees.blackboard.Client(name="shutdown_check")
+        bb.register_key(B.GAME_OVER, access=py_trees.common.Access.READ)
+        try:
+            reason = bb.get(B.GAME_OVER)
+            if reason:
+                node.get_logger().info(f"game over ({reason}) — shutting down")
+                _shutdown_flag[0] = True
+                rclpy.try_shutdown()
+        except Exception:
+            pass
 
     tree.add_post_tick_handler(on_post_tick)
     tree.tick_tock(period_ms=200.0)

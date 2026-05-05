@@ -21,7 +21,10 @@ def generate_launch_description():
         robot_description_semantic = f.read()
 
     with open(kinematics_file) as f:
-        kinematics_yaml = yaml.safe_load(f)
+        kinematics_raw = yaml.safe_load(f)
+
+    kinematics_yaml = kinematics_raw.get("/**", kinematics_raw).get("ros__parameters", kinematics_raw)
+
 
     with open(moveit_controllers_file) as f:
         moveit_controllers = yaml.safe_load(f)

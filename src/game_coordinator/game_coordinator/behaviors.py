@@ -288,17 +288,56 @@ class RequestMove(py_trees.behaviour.Behaviour):
         self.bb.register_key(CURRENT_MOVE, access=py_trees.common.Access.WRITE)
 
     def setup(self, **kwargs):
-        # TODO(chess_engine branch): create one service client per color:
-        #   /stockfish/white/get_move, /stockfish/black/get_move
-        # using the request/response type defined by the chess_engine package.
-        pass
+        self._clients = {
+            "white": self.node.create_client(GetMove, "/stockfish/white/get_move"),
+            "black": self.node.create_client(GetMove, "/stockfish/black/get_move"),
+        }
 
     def update(self):
-        raise NotImplementedError(
-            "RequestMove: implement once chess_engine branch defines the service type"
-        )
+        player = self.bb.get(ACTIVE_PLAYER)
+        fen = self.bb.get(PRE_MOVE_FEN)
+        if not player or not fen:
+            self.feedback_message = "waiting for player/FEN"
+            return py_trees.common.Status.FAILURE
 
+        client = self._clients.get(player)
+        if not client.service_is_ready():
+            self.feedback_message = f"stockfish/{player} not ready"
+            return py_trees.common.Status.RUNNING
 
+        # Send request if not already in flight
+        if not hasattr(self, '_future') or self._future is None:
+            req = GetMove.Request()
+            req.fen = fen
+            self._future = client.call_async(req)
+            self._future_player = player
+            self._future_fen = fen
+
+        # Check if same request (player/fen changed mid-flight → restart)
+        if self._future_player != player or self._future_fen != fen:
+            self._future = None
+            return py_trees.common.Status.RUNNING
+
+        if not self._future.done():
+            self.feedback_message = f"waiting for stockfish/{player}"
+            return py_trees.common.Status.RUNNING
+
+        future = self._future
+        self._future = None
+
+        if future.exception() is not None:
+            self.feedback_message = f"stockfish exception: {future.exception()}"
+            return py_trees.common.Status.FAILURE
+
+        resp = future.result()
+        if not resp.success:
+            self.feedback_message = f"stockfish error: {resp.reason}"
+            return py_trees.common.Status.FAILURE
+
+        self.bb.set(CURRENT_MOVE, resp.uci)
+        self.feedback_message = f"{player} plays {resp.uci}"
+        self.node.get_logger().info(f"[RequestMove] {player} -> {resp.uci}")
+        return py_trees.common.Status.SUCCESS
 class PlanGrasp(py_trees.behaviour.Behaviour):
     """Call /grasp_planner/plan with CURRENT_TASK → CURRENT_GRASP.
 

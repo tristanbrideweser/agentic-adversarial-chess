@@ -15,10 +15,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake git wget curl \
     python3-pip python3-colcon-common-extensions \
     python3-rosdep python3-vcstool \
+    # Use the ROS-specific package names
+    ros-${ROS_DISTRO}-py-trees-ros \
+    ros-${ROS_DISTRO}-py-trees-ros-interfaces \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     ros-${ROS_DISTRO}-ros-gz \
     ros-${ROS_DISTRO}-moveit \
     ros-${ROS_DISTRO}-moveit-ros-planning-interface \
+    # Fixed the double-hyphen below
+    ros-${ROS_DISTRO}-moveit-servo \
+    ros-${ROS_DISTRO}-joint-state-publisher-gui \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-gz-ros2-control \
@@ -60,7 +66,7 @@ RUN wget -q https://github.com/official-stockfish/Stockfish/releases/download/sf
     rm -rf /tmp/stockfish*
 
 RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed \
-    chess stockfish open3d transforms3d \
+    chess stockfish open3d transforms3d py-trees \
     "setuptools==68.2.2"
 
 
@@ -72,9 +78,8 @@ ENV WORKSPACE=${WORKSPACE}
 RUN mkdir -p ${WORKSPACE}/src
 WORKDIR ${WORKSPACE}
 
-ENV PYTHONPATH=/opt/ros/${ROS_DISTRO}/lib/python3.12/site-packages:${PYTHONPATH:-}
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ENV ROS_DOMAIN_ID=42
+ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
